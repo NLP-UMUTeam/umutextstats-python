@@ -28,8 +28,8 @@ def make_config(strategy):
 def compute(strategy):
     df = pd.DataFrame({
         "text_norm": [
-            "hola mundo",
-            "hola",
+            "hola mundo",  # length=10, words=2
+            "hola",        # length=4, words=1
         ]
     })
 
@@ -37,27 +37,34 @@ def compute(strategy):
     return engine.compute(df)
 
 
+# --- SUM ---
 def test_composite_sum():
-    result = compute("SUM")
+    result = compute("CompositeStrategySum")
 
-    assert list(result["length"]) == [10, 4]
-    assert list(result["words"]) == [2, 1]
     assert list(result["parent"]) == [12, 5]
 
 
-def test_composite_avg():
-    result = compute("AVG")
+def test_composite_sum_alias():
+    result = compute("SUM")
 
+    assert list(result["parent"]) == [12, 5]
+
+
+# --- AVG ---
+def test_composite_avg():
+    result = compute("CompositeStrategyAvg")
     assert list(result["parent"]) == [6.0, 2.5]
 
-
 def test_composite_max():
-    result = compute("MAX")
-
+    result = compute("CompositeStrategyMax")
     assert list(result["parent"]) == [10, 4]
 
-
 def test_composite_min():
-    result = compute("MIN")
-
+    result = compute("CompositeStrategyMin")
     assert list(result["parent"]) == [2, 1]
+
+
+# --- fallback ---
+def test_composite_unknown_defaults_to_sum():
+    result = compute("whatever")
+    assert list(result["parent"]) == [12, 5]

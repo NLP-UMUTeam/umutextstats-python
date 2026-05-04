@@ -1,0 +1,70 @@
+import regex as re
+
+from umutextstats.dimensions.base import BaseDimension
+
+
+URL_REGEX = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
+MENTION_BEGINNING_REGEX = re.compile(r"^\s*@\w+\s*", re.UNICODE)
+WORD_REGEX_CASE = re.compile(r"@?\b[\p{L}\p{N}]+\b", re.UNICODE)
+
+
+class WordCase(BaseDimension):
+    def __init__(
+        self,
+        key: str,
+        comparator: str = "upper",
+        input_column: str = "text_raw",
+    ):
+        super().__init__(key=key, input_column=input_column)
+        self.comparator = comparator or "upper"
+
+    def compute(self, df):
+        return (
+            df[self.input_column]
+            .fillna("")
+            .astype(str)
+            .apply(self._compute_text)
+        )
+
+    def _compute_text(self, text: str) -> float:
+        text = URL_REGEX.sub("", text)
+        text = MENTION_BEGINNING_REGEX.sub("", text).strip()
+
+        words = WORD_REGEX_CASE.findall(text)
+
+        if self.comparator == "title":
+            words = [
+                word
+                for index, word in enumerate(words)
+                if index == 0 or len(word) > 3
+            ]
+
+        total_words = 0
+        fit_words = 0
+
+        for word in words:
+            if word.isdigit():
+                continue
+
+            if word.startswith("@"):
+                continue
+
+            total_words += 1
+
+            if self._fits(word):
+                fit_words += 1
+
+        if total_words == 0:
+            return 0.0
+
+        return (100 * fit_words) / total_words
+
+    def _fits(self, word: str) -> bool:
+        if self.comparator == "lower":
+            return word == word.lower()
+
+        if self.comparator == "title":
+            return word == word.title()
+
+        # default: upper
+        return word == word.upper()

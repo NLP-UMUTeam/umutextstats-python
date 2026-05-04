@@ -30,6 +30,12 @@ from umutextstats.dimensions.pos_tagging_expression import POSTaggingExpression
 from umutextstats.dimensions.readability import ReadbilityDimension
 from umutextstats.dimensions.rtie import RTIEDimension, RTIEDeviationDimension
 from umutextstats.dimensions.sentence_per_dictionary import SentencePerDictionary
+from umutextstats.dimensions.syllable_per_word import SyllablePerWordDimension
+from umutextstats.dimensions.twitter_reply_to import TwitterReplyToDimension
+from umutextstats.dimensions.verb_per_dictionary import VerbPerDictionary
+from umutextstats.dimensions.words_per_sentence import WordPerSentenceDimension
+from umutextstats.dimensions.word_unique import WordUniqueDimension
+from umutextstats.dimensions.word_case import WordCase
 
 # =========================
 # Registry
@@ -62,6 +68,12 @@ DIMENSION_REGISTRY: dict[str, Type[BaseDimension]] = {
     "RTIEDimension": RTIEDimension,
     "RTIEDeviationDimension": RTIEDeviationDimension,
     "SentencePerDictionary": SentencePerDictionary,
+    "SyllablePerWordDimension": SyllablePerWordDimension,
+    "TwitterReplyToDimension": TwitterReplyToDimension,
+    "VerbPerDictionary": VerbPerDictionary,
+    "WordPerSentenceDimension": WordPerSentenceDimension,
+    "WordUniqueDimension": WordUniqueDimension,
+    "WordCase": WordCase,
 }
 
 

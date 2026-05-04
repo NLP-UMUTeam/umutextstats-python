@@ -81,13 +81,8 @@ class DimensionEngine:
             instance = self._build_dimension(dimension, dimension_cls)
             data[key] = instance.compute(df)
 
-    def _compute_composite_dimension(
-        self,
-        dimension: DimensionConfig,
-        data: dict,
-        n_rows: int,
-    ):
-        strategy = (dimension.strategy or "SUM").upper()
+    def _compute_composite_dimension(self, dimension, data, n_rows):
+        strategy = (dimension.strategy or "CompositeStrategySum").upper()
 
         child_keys = [
             child.key
@@ -96,29 +91,29 @@ class DimensionEngine:
         ]
 
         if not child_keys:
-            return [""] * n_rows
+            return [0] * n_rows
 
         child_df = pd.DataFrame({
             key: data[key]
             for key in child_keys
         })
 
-        child_df = child_df.apply(pd.to_numeric, errors="coerce")
+        child_df = child_df.apply(pd.to_numeric, errors="coerce").fillna(0)
 
-        if strategy == "SUM":
-            return child_df.sum(axis=1, skipna=True)
+        if strategy == "COMPOSITESTRATEGYSUM":
+            return child_df.sum(axis=1)
 
-        if strategy == "AVG":
-            return child_df.mean(axis=1, skipna=True)
+        if strategy == "COMPOSITESTRATEGYAVG":
+            return child_df.mean(axis=1)
 
-        if strategy == "MAX":
-            return child_df.max(axis=1, skipna=True)
+        if strategy == "COMPOSITESTRATEGYMAX":
+            return child_df.max(axis=1)
 
-        if strategy == "MIN":
-            return child_df.min(axis=1, skipna=True)
+        if strategy == "COMPOSITESTRATEGYMIN":
+            return child_df.min(axis=1)
 
-        # Unknown strategy
-        return [""] * n_rows
+        # fallback seguro
+        return child_df.sum(axis=1)
 
     def _track_dimension(self, key: str, class_name: str | None):
         if self.profiler is None:
@@ -133,6 +128,12 @@ class DimensionEngine:
     def _build_dimension(self, dimension: DimensionConfig, dimension_cls):
 
         class_name = normalize_class_name(dimension.class_name)
+
+        input_column = (
+            "text_raw"
+            if dimension.use_original_input
+            else self.input_column
+        )
         
         if class_name == "WordPerDictionary":
             return dimension_cls(
@@ -244,6 +245,39 @@ class DimensionEngine:
                 dictionary_name=dimension.dictionary or "",
                 input_column=input_column,
                 percentage=dimension.percentage,
+            )
+
+        if class_name == "TwitterReplyToDimension":
+            return dimension_cls(
+                key=dimension.key,
+                dictionary_name=dimension.dictionary or "",
+                input_column="text_raw",
+            )
+
+        if class_name == "VerbPerDictionary":
+            return dimension_cls(
+                key=dimension.key,
+                dictionary_name=dimension.dictionary or "",
+                input_column=input_column,
+                percentage=dimension.percentage,
+            )
+
+        if class_name == "WordUniqueDimension":
+            return dimension_cls(
+                key=dimension.key,
+                input_column=input_column,
+                percentage=dimension.percentage,
+            )
+
+        if class_name == "WordCase":
+            return dimension_cls(
+                key=dimension.key,
+                comparator=(
+                    dimension.params.get("word_comparator")
+                    or dimension.params.get("comparator")
+                    or "upper"
+                ),
+                input_column="text_raw",
             )
 
         return dimension_cls(

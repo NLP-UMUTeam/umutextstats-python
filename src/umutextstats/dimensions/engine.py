@@ -280,6 +280,15 @@ class DimensionEngine:
                 input_column="text_raw",
             )
 
+        if class_name == "WordLengthDimension":
+            return dimension_cls(
+                key=dimension.key,
+                length=dimension.params.get("length"),
+                comparator=dimension.params.get("comparator", "="),
+                input_column=input_column,
+                percentage=dimension.percentage,
+            )
+
         return dimension_cls(
             key=dimension.key,
             input_column=self.input_column,

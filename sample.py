@@ -6,8 +6,9 @@ from umutextstats.config import load_config
 from umutextstats.dimensions import DimensionEngine
 from umutextstats.utils.profiler import Profiler
 from umutextstats.output import write_output
+from umutextstats.common import add_common_features_cached
 
-input_path = "dataset-10.csv"
+input_path = "dataset.csv"
 
 cache = CacheManager(".cache")
 config = load_config()
@@ -19,6 +20,13 @@ with profiler.track("io", "read_input"):
 
 with profiler.track("preprocessing", "normalize"):
     df = preprocess_dataframe_cached(
+        df,
+        input_path=input_path,
+        cache=cache,
+    )
+
+with profiler.track("common", "features"):
+    df = add_common_features_cached(
         df,
         input_path=input_path,
         cache=cache,
@@ -46,4 +54,6 @@ with profiler.track("dimensions", "compute_all"):
 stats = profiler.dataframe()
 
 write_output(features, "features.csv")
+write_output(features, "features.json")
 write_output(profiler.dataframe(), "stats.json")
+write_output(profiler.dataframe(), "stats.csv")

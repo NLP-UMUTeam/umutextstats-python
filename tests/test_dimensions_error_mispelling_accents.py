@@ -8,16 +8,26 @@ from umutextstats.dimensions.error_mispelling_accents import (
 
 
 class FakeSpellChecker:
-    def __contains__(self, word):
-        return word in {"hola", "mundo", "camión", "rápido"}
-
-    def correction(self, word):
-        corrections = {
+    def __init__(self):
+        self._known = {"hola", "mundo", "camión", "rápido"}
+        self._corrections = {
             "camion": "camión",
             "rapido": "rápido",
             "holaa": "hola",
         }
-        return corrections.get(word)
+
+    def available(self) -> bool:
+        return True
+
+    def is_known(self, word: str) -> bool:
+        return word in self._known
+
+    def correction(self, word: str) -> str | None:
+        return self._corrections.get(word)
+
+    # opcional: mantener compatibilidad con código antiguo
+    def __contains__(self, word):
+        return self.is_known(word)
 
 
 def compute(texts):

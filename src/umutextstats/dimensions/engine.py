@@ -131,7 +131,10 @@ class DimensionEngine:
         )
 
     def _build_dimension(self, dimension: DimensionConfig, dimension_cls):
-        if normalize_class_name(dimension.class_name) == "WordPerDictionary":
+
+        class_name = normalize_class_name(dimension.class_name)
+        
+        if class_name == "WordPerDictionary":
             return dimension_cls(
                 key=dimension.key,
                 dictionary_name=dimension.dictionary or "",
@@ -140,7 +143,7 @@ class DimensionEngine:
                 use_regex=not dimension.disabled_regexp,
             )
             
-        if normalize_class_name(dimension.class_name) == "PatternDimension":
+        if class_name == "PatternDimension":
             return dimension_cls(
                 key=dimension.key,
                 pattern=dimension.pattern or "",
@@ -148,12 +151,99 @@ class DimensionEngine:
                 percentage=dimension.percentage,
             )
             
-        if normalize_class_name(dimension.class_name) == "POSTaggingTag":
+        if class_name == "POSTaggingTag":
             return dimension_cls(
                 key=dimension.key,
                 input_column="tagged_pos",
-                postagger_tag=dimension.params.get("postagger_tag"),
+                postagger_tag=dimension.params.get("tag"),
                 postagger_universal=dimension.universal,
+            )
+
+        if class_name == "POSTaggingExpression":
+            return dimension_cls(
+                key=dimension.key,
+                pattern=dimension.pattern or "",
+                input_column="tagged_pos",
+                percentage=dimension.percentage,
+            )
+
+        if class_name == "NERTaggingTag":
+            return dimension_cls(
+                key=dimension.key,
+                tag=dimension.params.get("tag"),
+                input_column="tagged_ner",
+            )
+            
+        if class_name == "EncliticsPersonalPronounsDictionary":
+            return dimension_cls(
+                key=dimension.key,
+                dictionary_name=dimension.dictionary or "",
+                input_column=input_column,
+            )
+            
+        if class_name == "PeriphrasisDimension":
+            return dimension_cls(
+                key=dimension.key,
+                auxiliar_verbs=dimension.params.get("auxiliar_verbs", ""),
+                input_column=input_column,
+                tagged_pos_column="tagged_pos",
+            )
+            
+        if class_name == "CharacterCountDimension":
+            return dimension_cls(
+                key=dimension.key,
+                chars=dimension.params.get("char", ""),
+                input_column=input_column,
+            )
+        
+        if class_name == "ErrorCapitalizationStartingWithLowerCaseDimension":
+            return dimension_cls(
+                key=dimension.key,
+                input_column="text_raw",
+            )
+
+        if class_name == "ErrorStyleSentencesStartingWithNumbers":
+            return dimension_cls(
+                key=dimension.key,
+                input_column="text_raw",
+            )
+
+        if class_name == "ErrorStyleSentencesStartingWithTheSameWord":
+            return dimension_cls(
+            key=dimension.key,
+            input_column="text_raw",
+        )
+
+        if class_name == "GrammaticalGenderDimension":
+            return dimension_cls(
+                key=dimension.key,
+                dictionary_name=dimension.dictionary or "",
+                input_column=input_column,
+                tagged_pos_column="tagged_pos",
+                percentage=dimension.percentage,
+                use_regex=not dimension.disabled_regexp,
+            )
+
+        if class_name == "LanguageDimension":
+            return dimension_cls(
+                key=dimension.key,
+                language=dimension.params.get("language", ""),
+                input_column=input_column,
+            )
+
+        if class_name in {"RTIEDimension", "RTIEDeviationDimension"}:
+            return dimension_cls(
+                key=dimension.key,
+                input_column=input_column,
+                separator=dimension.params.get("separator", "by-chunks"),
+            )
+
+        if class_name == "SentencePerDictionary":
+            return dimension_cls(
+                key=dimension.key,
+                dictionary_name=dimension.dictionary or "",
+                input_column=input_column,
+                percentage=dimension.percentage,
             )
 
         return dimension_cls(

@@ -22,14 +22,19 @@ dependencies = [
     "regex>=2024.0"
 ]
 
-
 [project.optional-dependencies]
 nlp = [
-    "stanza>=1.8"
+    "stanza>=1.8",
+    "pyspellchecker>=0.8",
+    "fasttext-numpy2-wheel>=0.9.2"
 ]
 
 dev = [
     "pytest>=8.0"
+]
+
+spell = [
+    "hunspell"
 ]
 
 

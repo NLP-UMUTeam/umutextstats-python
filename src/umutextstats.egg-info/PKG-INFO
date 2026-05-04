@@ -8,6 +8,8 @@ Description-Content-Type: text/markdown
 Requires-Dist: pandas>=2.0
 Requires-Dist: tqdm>=4.66
 Requires-Dist: emoji>=2.0
+Requires-Dist: pyarrow>=15.0
+Requires-Dist: regex>=2024.0
 Provides-Extra: nlp
 Requires-Dist: stanza>=1.8; extra == "nlp"
 Provides-Extra: dev

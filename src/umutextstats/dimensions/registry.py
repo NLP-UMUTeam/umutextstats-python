@@ -36,6 +36,7 @@ from umutextstats.dimensions.verb_per_dictionary import VerbPerDictionary
 from umutextstats.dimensions.words_per_sentence import WordPerSentenceDimension
 from umutextstats.dimensions.word_unique import WordUniqueDimension
 from umutextstats.dimensions.word_case import WordCase
+from umutextstats.dimensions.word_length import WordLengthDimension
 
 # =========================
 # Registry
@@ -74,6 +75,7 @@ DIMENSION_REGISTRY: dict[str, Type[BaseDimension]] = {
     "WordPerSentenceDimension": WordPerSentenceDimension,
     "WordUniqueDimension": WordUniqueDimension,
     "WordCase": WordCase,
+    "WordLengthDimension": WordLengthDimension,
 }
 
 

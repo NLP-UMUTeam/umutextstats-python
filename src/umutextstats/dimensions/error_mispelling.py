@@ -1,7 +1,6 @@
-# src/umutextstats/dimensions/error_mispelling.py
-
 from umutextstats.dimensions.base import BaseDimension
 from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.utils.spellchecker_cache import get_cached_spellchecker
 
 
 class ErrorMispellingDimension(BaseDimension):
@@ -21,10 +20,10 @@ class ErrorMispellingDimension(BaseDimension):
             self.spellchecker = None
             return
 
-        self.spellchecker = SpellChecker(language=language)
+        self.spellchecker = get_cached_spellchecker(language)
 
     def compute(self, df):
-        if self.spellchecker is None:
+        if not self.spellchecker.available():
             return [self.missing_value] * len(df)
 
         return (
@@ -40,6 +39,10 @@ class ErrorMispellingDimension(BaseDimension):
         if not words:
             return 0.0
 
-        misspelled = self.spellchecker.unknown(words)
+        errors = sum(
+            1
+            for word in words
+            if not self.spellchecker.is_known(word)
+        )
 
-        return (100 * len(misspelled)) / len(words)
+        return (100 * errors) / len(words)

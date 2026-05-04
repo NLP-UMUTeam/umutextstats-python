@@ -1,8 +1,7 @@
-# src/umutextstats/dimensions/error_mispelling_accents.py
-
 from umutextstats.dimensions.base import BaseDimension
 from umutextstats.dimensions.enclitics_personal_pronouns import remove_accents
 from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.utils.spellchecker_cache import get_cached_spellchecker
 
 
 class ErrorMispellingAccentsDimension(BaseDimension):
@@ -22,10 +21,10 @@ class ErrorMispellingAccentsDimension(BaseDimension):
             self.spellchecker = None
             return
 
-        self.spellchecker = SpellChecker(language=language)
+        self.spellchecker = get_cached_spellchecker(language)
 
     def compute(self, df):
-        if self.spellchecker is None:
+        if not self.spellchecker.available():
             return [self.missing_value] * len(df)
 
         return (
@@ -44,7 +43,7 @@ class ErrorMispellingAccentsDimension(BaseDimension):
         occurrences = 0
 
         for word in words:
-            if word in self.spellchecker:
+            if self.spellchecker.is_known(word):
                 continue
 
             suggestion = self.spellchecker.correction(word)

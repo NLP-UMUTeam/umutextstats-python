@@ -25,6 +25,9 @@ def count_syllables_text(text: str) -> int:
 
 class SyllableCountDimension(BaseDimension):
     def compute(self, df):
+        if "syllable_count" in df.columns:
+            return df["syllable_count"]
+
         return (
             df[self.input_column]
             .fillna("")

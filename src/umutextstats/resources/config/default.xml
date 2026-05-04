@@ -1874,7 +1874,7 @@
                         <!-- Words length average -->
                         <dimension>
                             <key>stylometry-corpus-words-length-avg</key>
-                            <class>WordAverageLengthDimension</class>
+                            <class>AverageWordLengthDimension</class>
                             <description>The average length of the words</description>
                         </dimension>
                         

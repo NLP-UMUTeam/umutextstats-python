@@ -1,8 +1,6 @@
-# src/umutextstats/dimensions/syllable_per_word.py
-
 from umutextstats.dimensions.base import BaseDimension
 from umutextstats.dimensions.syllable_count import count_syllables_text
-from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.text.tokenization import get_syllabifiable_words
 
 
 class SyllablePerWordDimension(BaseDimension):
@@ -15,7 +13,7 @@ class SyllablePerWordDimension(BaseDimension):
         )
 
     def _compute_text(self, text: str) -> float:
-        words = WORD_REGEX.findall(text)
+        words = get_syllabifiable_words(text)
 
         if not words:
             return 0.0

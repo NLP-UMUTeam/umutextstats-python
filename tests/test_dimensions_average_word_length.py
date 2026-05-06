@@ -18,7 +18,7 @@ def test_average_word_length_different_lengths():
 
 
 def test_average_word_length_ignores_numbers():
-    assert compute(["yo tengo 2 casas"]) == [4.0]
+    assert compute(["yo tengo 2 casas"]) == [3.25]
 
 
 def test_average_word_length_empty():

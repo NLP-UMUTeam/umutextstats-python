@@ -1,8 +1,5 @@
-# src/umutextstats/dimensions/grammatical_gender.py
-
 from umutextstats.dimensions.pos_tagging_tag import POS_ITEM_REGEX
 from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
-from umutextstats.dimensions.word_count import WORD_REGEX
 
 
 ALLOWED_POS = {

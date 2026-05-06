@@ -1,8 +1,6 @@
-# src/umutextstats/dimensions/error_mispelling_accents.py
-
 from umutextstats.dimensions.base import BaseDimension
 from umutextstats.dimensions.enclitics_personal_pronouns import remove_accents
-from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.text.tokenization import get_lexical_tokens
 from umutextstats.utils.accent_map import load_accent_map
 
 
@@ -28,7 +26,7 @@ class ErrorMispellingAccentsDimension(BaseDimension):
         )
 
     def _compute_text(self, text: str) -> float:
-        words = [word.lower() for word in WORD_REGEX.findall(text)]
+        words = get_lexical_tokens (text)
 
         if not words:
             return 0.0

@@ -26,7 +26,7 @@ def test_different_word_lengths():
 
 
 def test_ignores_numbers():
-    # hola(2) mundo(2), 2 is ignored
+     # hola(2), mundo(2), 2 is ignored because it is not syllabifiable text
     assert compute(["hola 2 mundo"]) == [2.0]
 
 

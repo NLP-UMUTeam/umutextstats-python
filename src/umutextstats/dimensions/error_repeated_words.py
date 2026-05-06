@@ -1,10 +1,6 @@
-import regex as re
-
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
-
-
-SENTENCE_REGEX = re.compile(r"[^.!?]+[.!?]*", re.UNICODE)
+from umutextstats.text.sentence import get_sentences
+from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class ErrorMiscTwoOrMoreEqualWordsDimension(BaseDimension):
@@ -17,25 +13,21 @@ class ErrorMiscTwoOrMoreEqualWordsDimension(BaseDimension):
         )
 
     def _compute_text(self, text: str) -> float:
-        sentences = self._split_sentences(text)
+        sentences = get_sentences(text)
         total_sentences = len(sentences)
 
         if total_sentences == 0:
             return 0.0
 
-        occurrences = sum(self._count_repeated_words(sentence) for sentence in sentences)
+        occurrences = sum(
+            self._count_repeated_words(sentence)
+            for sentence in sentences
+        )
 
         return (100 * occurrences) / total_sentences
 
-    def _split_sentences(self, text: str) -> list[str]:
-        return [
-            match.group(0).strip()
-            for match in SENTENCE_REGEX.finditer(text)
-            if match.group(0).strip()
-        ]
-
     def _count_repeated_words(self, sentence: str) -> int:
-        words = WORD_REGEX.findall(sentence.lower())
+        words = get_lexical_tokens(sentence)
 
         occurrences = 0
 

@@ -36,7 +36,9 @@ def annotate_dataframe_with_stanza(
     if use_cache:
         cached = cache.load("stanza", key)
         if cached is not None:
-            return cached
+            df[pos_column] = cached[pos_column]
+            df[ner_column] = cached[ner_column]
+            return df
 
     # Lazy initialization: Stanza only loads if cache is missing
     annotator = annotator or StanzaAnnotator()
@@ -54,6 +56,6 @@ def annotate_dataframe_with_stanza(
         df = df.drop(columns=[doc_column])
 
     if use_cache:
-        cache.save(df, "stanza", key)
+        cache.save(df[[pos_column, ner_column]], "stanza", key)
 
     return df

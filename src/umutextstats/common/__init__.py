@@ -1,7 +1,12 @@
-from umutextstats.common.features import add_common_features, count_sentences
-from umutextstats.common.pipeline import add_common_features_cached
+from umutextstats.common.features import (
+    COMMON_FEATURE_COLUMNS,
+    add_common_features,
+    add_common_features_cached,
+    count_sentences,
+)
 
 __all__ = [
+    "COMMON_FEATURE_COLUMNS",
     "add_common_features",
     "add_common_features_cached",
     "count_sentences",

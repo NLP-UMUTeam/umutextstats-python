@@ -1,6 +1,6 @@
 from umutextstats.dictionaries import DictionaryLoader
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.text.tokenization import get_lexical_tokens
 
 AUX_VERB_HABER = {
     "ha",
@@ -89,8 +89,7 @@ class VerbPerDictionary(BaseDimension):
         )
 
     def _compute_text(self, text: str) -> float:
-        words = [word.lower() for word in WORD_REGEX.findall(text)]
-
+        words = get_lexical_tokens (text)
         total_words = len(words)
 
         if total_words == 0:

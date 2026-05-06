@@ -2,10 +2,8 @@ import regex as re
 
 from umutextstats.dimensions.base import BaseDimension
 from umutextstats.dimensions.syllable_count import count_syllables_text
-from umutextstats.dimensions.word_count import WORD_REGEX
-
-
-SENTENCE_REGEX = re.compile(r"[.!?]+", re.UNICODE)
+from umutextstats.text.tokenization import get_lexical_tokens
+from umutextstats.text.patterns import SENTENCE_REGEX
 
 
 class ReadbilityDimension(BaseDimension):
@@ -18,7 +16,7 @@ class ReadbilityDimension(BaseDimension):
         )
 
     def _compute_text(self, text: str) -> float:
-        word_count = len(WORD_REGEX.findall(text))
+        word_count = len(get_lexical_tokens (text))
         syllables_count = count_syllables_text(text)
         sentences_count = self._count_sentences(text)
 

@@ -1,9 +1,7 @@
-import re
+import regex as re
 
 from umutextstats.dimensions.base import BaseDimension
-
-
-WORD_REGEX = re.compile(r"\b[a-záéíóúüñ]+\b", re.IGNORECASE)
+from umutextstats.text.patterns import LEXICAL_TOKEN_REGEX
 
 
 class WordCountDimension(BaseDimension):
@@ -15,5 +13,5 @@ class WordCountDimension(BaseDimension):
             df[self.input_column]
             .fillna("")
             .astype(str)
-            .apply(lambda text: len(WORD_REGEX.findall(text)))
+            .apply(lambda text: len(LEXICAL_TOKEN_REGEX.findall(text)))
         )

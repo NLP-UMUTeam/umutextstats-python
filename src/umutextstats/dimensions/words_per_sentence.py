@@ -1,12 +1,6 @@
-# src/umutextstats/dimensions/words_per_sentence.py
-
-import regex as re
-
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
-
-
-SENTENCE_REGEX = re.compile(r"[.!?]+", re.UNICODE)
+from umutextstats.text.sentence import count_sentences
+from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class WordPerSentenceDimension(BaseDimension):
@@ -19,26 +13,14 @@ class WordPerSentenceDimension(BaseDimension):
         )
 
     def _compute_text(self, text: str) -> float:
-        words = WORD_REGEX.findall(text)
-        total_words = len(words)
+        total_words = len(get_lexical_tokens(text))
 
         if total_words == 0:
             return 0.0
 
-        sentences = self._count_sentences(text)
+        total_sentences = count_sentences(text)
 
-        if sentences == 0:
+        if total_sentences == 0:
             return 0.0
 
-        return total_words / sentences
-
-    def _count_sentences(self, text: str) -> int:
-        text = text.strip()
-
-        if not text:
-            return 0
-
-        count = len(SENTENCE_REGEX.findall(text))
-
-        # Igual que en otras dimensiones: mínimo 1 frase
-        return count if count > 0 else 1
+        return total_words / total_sentences

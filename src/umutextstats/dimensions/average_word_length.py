@@ -1,19 +1,20 @@
-# src/umutextstats/dimensions/average_word_length.py
-
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class AverageWordLengthDimension(BaseDimension):
     def compute(self, df):
-        texts = df[self.input_column].fillna("").astype(str)
+        return (
+            df[self.input_column]
+            .fillna("")
+            .astype(str)
+            .apply(self._compute_text)
+        )
 
-        def avg_word_length(text: str) -> float:
-            words = WORD_REGEX.findall(text)
+    def _compute_text(self, text: str) -> float:
+        words = get_lexical_tokens(text)
 
-            if not words:
-                return 0.0
+        if not words:
+            return 0.0
 
-            return sum(len(word) for word in words) / len(words)
-
-        return texts.apply(avg_word_length)
+        return sum(len(word) for word in words) / len(words)

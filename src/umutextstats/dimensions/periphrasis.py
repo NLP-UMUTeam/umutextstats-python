@@ -4,7 +4,7 @@ import regex as re
 
 from umutextstats.dimensions.base import BaseDimension
 from umutextstats.dimensions.pos_tagging_tag import POS_ITEM_REGEX
-from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.text.tokenization import get_lexical_tokens
 
 
 VERB_FORM_BY_MODE = {
@@ -34,7 +34,7 @@ class PeriphrasisDimension(BaseDimension):
         text = str(row.get(self.input_column, "") or "")
         tagged_pos = str(row.get(self.tagged_pos_column, "") or "")
 
-        words = WORD_REGEX.findall(text.lower())
+        words = get_lexical_tokens (text)
         tagged_words = self._parse_tagged_pos(tagged_pos)
 
         if not words or not tagged_words:
@@ -136,14 +136,14 @@ class PeriphrasisDimension(BaseDimension):
 
     def _match_linker(
         self,
-        words: list[str],
+        words,
         start_index: int,
         linker_variants: list[list[str]],
     ) -> int | None:
         for linker_tokens in linker_variants:
             end_index = start_index + len(linker_tokens)
 
-            if words[start_index:end_index] == linker_tokens:
+            if tuple(words[start_index:end_index]) == tuple(linker_tokens):
                 return len(linker_tokens)
 
         return None

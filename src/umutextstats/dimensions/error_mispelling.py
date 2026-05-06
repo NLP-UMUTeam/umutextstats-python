@@ -1,5 +1,5 @@
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.text.tokenization import get_lexical_tokens
 from umutextstats.utils.spellchecker_cache import get_cached_spellchecker
 
 
@@ -34,7 +34,7 @@ class ErrorMispellingDimension(BaseDimension):
         )
 
     def _compute_text(self, text: str) -> float:
-        words = WORD_REGEX.findall(text.lower())
+        words = get_lexical_tokens (text)
 
         if not words:
             return 0.0

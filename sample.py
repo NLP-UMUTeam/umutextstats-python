@@ -24,6 +24,15 @@ with profiler.track("preprocessing", "normalize"):
         input_path=input_path,
         cache=cache,
     )
+    
+with profiler.track("common", "features"):
+    df = add_common_features_cached(
+        df,
+        input_path=args.input,
+        cache=cache,
+        use_cache=use_cache,
+        show_progress=show_progress,
+    )
 
 with profiler.track("common", "features"):
     df = add_common_features_cached(

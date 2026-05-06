@@ -1,5 +1,3 @@
-# tests/test_dimensions_word_count.py
-
 import pandas as pd
 
 from umutextstats.dimensions.word_count import WordCountDimension
@@ -43,8 +41,8 @@ def test_only_punctuation():
     assert compute(["!!!"]) == [0]
 
 
-def test_numbers_not_counted():
-    assert compute(["tengo 2 casas"]) == [2]
+def test_numbers_count():
+    assert compute(["tengo 2 casas"]) == [3]
 
 
 # =========================
@@ -60,7 +58,7 @@ def test_accents_and_special_chars():
 
 
 def test_mixed_text():
-    assert compute(["Hola mundo 123!!! test"]) == [3]
+    assert compute(["Hola mundo 123!!! test"]) == [4]
 
 
 # =========================

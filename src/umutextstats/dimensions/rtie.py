@@ -4,10 +4,8 @@ import statistics
 import regex as re
 
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
-
-
-SENTENCE_SPLIT_REGEX = re.compile(r"[^.!?]+[.!?]*", re.UNICODE)
+from umutextstats.text.tokenization import get_lexical_tokens
+from umutextstats.text.patterns import SENTENCE_REGEX
 
 
 class RTIEBaseDimension(BaseDimension):
@@ -60,12 +58,12 @@ class RTIEBaseDimension(BaseDimension):
         return ratios
 
     def _words(self, text: str) -> list[str]:
-        return [word.lower() for word in WORD_REGEX.findall(text)]
+        return get_lexical_tokens (text)
 
     def _sentences(self, text: str) -> list[str]:
         return [
             match.group(0).strip()
-            for match in SENTENCE_SPLIT_REGEX.finditer(text)
+            for match in SENTENCE_REGEX.finditer(text)
             if match.group(0).strip()
         ]
 

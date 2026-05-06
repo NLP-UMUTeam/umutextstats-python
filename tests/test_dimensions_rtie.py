@@ -1,5 +1,3 @@
-# tests/test_dimensions_rtie.py
-
 import pandas as pd
 
 from umutextstats.dimensions.rtie import RTIEDimension

@@ -22,6 +22,7 @@ def preprocess_dataframe_cached(
         "input_column": input_column,
         "output_column": output_column,
         "normalizer": repr([step.__class__.__name__ for step in normalizer.steps]),
+        "cache_version": 2,
     }
 
     key = cache.build_key(input_path, "preprocess", params)
@@ -29,7 +30,9 @@ def preprocess_dataframe_cached(
     if use_cache:
         cached = cache.load("preprocess", key)
         if cached is not None:
-            return cached
+            if output_column in cached.columns:
+                df[output_column] = cached[output_column]
+                return df
 
     df = preprocess_dataframe(
         df,
@@ -40,6 +43,10 @@ def preprocess_dataframe_cached(
     )
 
     if use_cache:
-        cache.save(df, "preprocess", key)
+        cache.save(
+            df[[output_column]],
+            "preprocess",
+            key,
+        )
 
     return df

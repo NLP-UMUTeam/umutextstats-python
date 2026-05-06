@@ -1,10 +1,10 @@
-# src/umutextstats/dimensions/word_per_dictionary.py
-
 import regex as re
+import numpy as np
+import pandas as pd
 
 from umutextstats.dictionaries import DictionaryLoader
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class WordPerDictionary(BaseDimension):
@@ -65,7 +65,7 @@ class WordPerDictionary(BaseDimension):
         return sum(len(pattern.findall(text)) for pattern in patterns)
 
     def _count_plain_words(self, text: str, words: set[str]) -> int:
-        source_words = WORD_REGEX.findall(text.lower())
+        source_words = get_lexical_tokens(text)
         return sum(1 for word in source_words if word in words)
 
     def _count_text(self, text: str) -> int:
@@ -81,7 +81,7 @@ class WordPerDictionary(BaseDimension):
 
         return max(0, count)
 
-    def compute(self, df): 
+    def compute(self, df):
         texts = df[self.input_column].fillna("").astype(str)
 
         counts = texts.apply(self._count_text)
@@ -89,9 +89,21 @@ class WordPerDictionary(BaseDimension):
         if not self.percentage:
             return counts
 
-        total_words = texts.apply(lambda text: len(WORD_REGEX.findall(text)))
+        if "word_count" in df.columns:
+            total_words = df["word_count"]
+        else:
+            total_words = texts.apply(lambda text: len(get_lexical_tokens(text)))
 
-        return counts.where(
-            total_words == 0,
-            (100 * counts / total_words),
-        ).fillna(0)
+        counts_array = counts.to_numpy(dtype=float)
+        total_words_array = total_words.to_numpy(dtype=float)
+
+        percentages = np.zeros_like(counts_array, dtype=float)
+
+        np.divide(
+            100.0 * counts_array,
+            total_words_array,
+            out=percentages,
+            where=total_words_array != 0,
+        )
+
+        return pd.Series(percentages, index=counts.index)

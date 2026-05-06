@@ -3,8 +3,7 @@ import regex as re
 
 from umutextstats.dictionaries import DictionaryLoader
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
-
+from umutextstats.text.tokenization import get_lexical_tokens
 
 ENCLITIC_PATTERN = r"([mts]e(l[aoe]s?)?|l[oae]s?|[mn]os?)"
 
@@ -42,7 +41,7 @@ class EncliticsPersonalPronounsDictionary(BaseDimension):
         texts = df[self.input_column].fillna("").astype(str)
 
         counts = texts.apply(self._count_text)
-        total_words = texts.apply(lambda text: len(WORD_REGEX.findall(text)))
+        total_words = texts.apply(lambda text: len(get_lexical_tokens(text)))
 
         result = (100 * counts / total_words.replace(0, 1)).astype(float)
         result[total_words == 0] = 0.0

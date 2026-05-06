@@ -1,5 +1,5 @@
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.word_count import WORD_REGEX
+from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class WordUniqueDimension(BaseDimension):
@@ -21,7 +21,7 @@ class WordUniqueDimension(BaseDimension):
         )
 
     def _compute_text(self, text: str):
-        words = [w.lower() for w in WORD_REGEX.findall(text)]
+        words = get_lexical_tokens(text)
         total_words = len(words)
 
         if total_words == 0:

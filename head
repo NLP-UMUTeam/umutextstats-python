@@ -1,0 +1,550 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /home/pepe/umutextstats-python
+configfile: pyproject.toml
+collected 101 items / 30 errors / 90 deselected / 11 selected
+
+==================================== ERRORS ====================================
+________ ERROR collecting tests/test_dimensions_average_word_length.py _________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_average_word_length.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_average_word_length.py:3: in <module>
+    from umutextstats.dimensions.average_word_length import AverageWordLengthDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+__________ ERROR collecting tests/test_dimensions_character_count.py ___________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_character_count.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_character_count.py:5: in <module>
+    from umutextstats.dimensions.character_count import CharacterCountDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+_____________ ERROR collecting tests/test_dimensions_composite.py ______________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_composite.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_composite.py:4: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+_____________ ERROR collecting tests/test_dimensions_enclitics.py ______________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_enclitics.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_enclitics.py:4: in <module>
+    from umutextstats.dimensions.enclitics_personal_pronouns import (
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+________ ERROR collecting tests/test_dimensions_error_capitalization.py ________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_error_capitalization.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_error_capitalization.py:5: in <module>
+    from umutextstats.dimensions.error_capitalization import (
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+__________ ERROR collecting tests/test_dimensions_error_mispelling.py __________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_error_mispelling.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_error_mispelling.py:6: in <module>
+    from umutextstats.dimensions.error_mispelling import ErrorMispellingDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+______ ERROR collecting tests/test_dimensions_error_mispelling_accents.py ______
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_error_mispelling_accents.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_error_mispelling_accents.py:5: in <module>
+    from umutextstats.dimensions.error_mispelling_accents import (
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+________ ERROR collecting tests/test_dimensions_error_repeated_words.py ________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_error_repeated_words.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_error_repeated_words.py:5: in <module>
+    from umutextstats.dimensions.error_repeated_words import (
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+________ ERROR collecting tests/test_dimensions_error_style_numbers.py _________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_error_style_numbers.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_error_style_numbers.py:3: in <module>
+    from umutextstats.dimensions.error_style_numbers import (
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+_______ ERROR collecting tests/test_dimensions_error_style_same_start.py _______
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_error_style_same_start.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_error_style_same_start.py:3: in <module>
+    from umutextstats.dimensions.error_style_same_start import (
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+_________ ERROR collecting tests/test_dimensions_grammatical_gender.py _________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_grammatical_gender.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_grammatical_gender.py:4: in <module>
+    from umutextstats.dimensions.grammatical_gender import GrammaticalGenderDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+______________ ERROR collecting tests/test_dimensions_language.py ______________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_language.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_language.py:5: in <module>
+    from umutextstats.dimensions.language import LanguageDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+__________ ERROR collecting tests/test_dimensions_ner_tagging_tag.py ___________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_ner_tagging_tag.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_ner_tagging_tag.py:5: in <module>
+    from umutextstats.dimensions.ner_tagging_tag import NERTaggingTag
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+______________ ERROR collecting tests/test_dimensions_pattern.py _______________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_pattern.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_pattern.py:3: in <module>
+    from umutextstats.dimensions.pattern import PatternDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+____________ ERROR collecting tests/test_dimensions_periphrasis.py _____________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_periphrasis.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_periphrasis.py:5: in <module>
+    from umutextstats.dimensions.periphrasis import PeriphrasisDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+____________ ERROR collecting tests/test_dimensions_perspicuity.py _____________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_perspicuity.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_perspicuity.py:5: in <module>
+    from umutextstats.dimensions.perspicuity import PerspicuityDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+_______ ERROR collecting tests/test_dimensions_pos_tagging_expression.py _______
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_pos_tagging_expression.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_pos_tagging_expression.py:5: in <module>
+    from umutextstats.dimensions.pos_tagging_expression import POSTaggingExpression
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+__________ ERROR collecting tests/test_dimensions_pos_tagging_tag.py ___________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_pos_tagging_tag.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_pos_tagging_tag.py:5: in <module>
+    from umutextstats.dimensions.pos_tagging_tag import POSTaggingTag
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+____________ ERROR collecting tests/test_dimensions_readability.py _____________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_readability.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_readability.py:5: in <module>
+    from umutextstats.dimensions.readability import ReadbilityDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+________________ ERROR collecting tests/test_dimensions_rtie.py ________________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_rtie.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_rtie.py:5: in <module>
+    from umutextstats.dimensions.rtie import RTIEDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+___________ ERROR collecting tests/test_dimensions_rtie_deviation.py ___________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_rtie_deviation.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_rtie_deviation.py:5: in <module>
+    from umutextstats.dimensions.rtie import RTIEDeviationDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+______ ERROR collecting tests/test_dimensions_sentence_per_dictionary.py _______
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_sentence_per_dictionary.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_sentence_per_dictionary.py:6: in <module>
+    from umutextstats.dimensions.sentence_per_dictionary import SentencePerDictionary
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+_________ ERROR collecting tests/test_dimensions_syllable_per_word.py __________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_syllable_per_word.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_syllable_per_word.py:5: in <module>
+    from umutextstats.dimensions.syllable_per_word import SyllablePerWordDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+__________ ERROR collecting tests/test_dimensions_twitter_reply_to.py __________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_twitter_reply_to.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_twitter_reply_to.py:6: in <module>
+    from umutextstats.dimensions.twitter_reply_to import TwitterReplyToDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+________ ERROR collecting tests/test_dimensions_verb_per_dictionary.py _________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_verb_per_dictionary.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_verb_per_dictionary.py:6: in <module>
+    from umutextstats.dimensions.verb_per_dictionary import VerbPerDictionary
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+_____________ ERROR collecting tests/test_dimensions_word_case.py ______________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_word_case.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_word_case.py:5: in <module>
+    from umutextstats.dimensions.word_case import WordCase
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+____________ ERROR collecting tests/test_dimensions_word_length.py _____________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_word_length.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_word_length.py:5: in <module>
+    from umutextstats.dimensions.word_length import WordLengthDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+________ ERROR collecting tests/test_dimensions_word_per_dictionary.py _________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_word_per_dictionary.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_word_per_dictionary.py:3: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+____________ ERROR collecting tests/test_dimensions_word_unique.py _____________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_word_unique.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_word_unique.py:5: in <module>
+    from umutextstats.dimensions.word_unique import WordUniqueDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+_________ ERROR collecting tests/test_dimensions_words_per_sentence.py _________
+ImportError while importing test module '/home/pepe/umutextstats-python/tests/test_dimensions_words_per_sentence.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_dimensions_words_per_sentence.py:3: in <module>
+    from umutextstats.dimensions.words_per_sentence import WordPerSentenceDimension
+src/umutextstats/dimensions/__init__.py:3: in <module>
+    from umutextstats.dimensions.engine import DimensionEngine
+src/umutextstats/dimensions/engine.py:7: in <module>
+    from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+src/umutextstats/dimensions/registry.py:12: in <module>
+    from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+src/umutextstats/dimensions/word_per_dictionary.py:7: in <module>
+    from umutextstats.dimensions.word_count import WORD_REGEX
+E   ImportError: cannot import name 'WORD_REGEX' from 'umutextstats.dimensions.word_count' (/home/pepe/umutextstats-python/src/umutextstats/dimensions/word_count.py)
+=========================== short test summary info ============================
+ERROR tests/test_dimensions_average_word_length.py
+ERROR tests/test_dimensions_character_count.py
+ERROR tests/test_dimensions_composite.py
+ERROR tests/test_dimensions_enclitics.py
+ERROR tests/test_dimensions_error_capitalization.py
+ERROR tests/test_dimensions_error_mispelling.py
+ERROR tests/test_dimensions_error_mispelling_accents.py
+ERROR tests/test_dimensions_error_repeated_words.py
+ERROR tests/test_dimensions_error_style_numbers.py
+ERROR tests/test_dimensions_error_style_same_start.py
+ERROR tests/test_dimensions_grammatical_gender.py
+ERROR tests/test_dimensions_language.py
+ERROR tests/test_dimensions_ner_tagging_tag.py
+ERROR tests/test_dimensions_pattern.py
+ERROR tests/test_dimensions_periphrasis.py
+ERROR tests/test_dimensions_perspicuity.py
+ERROR tests/test_dimensions_pos_tagging_expression.py
+ERROR tests/test_dimensions_pos_tagging_tag.py
+ERROR tests/test_dimensions_readability.py
+ERROR tests/test_dimensions_rtie.py
+ERROR tests/test_dimensions_rtie_deviation.py
+ERROR tests/test_dimensions_sentence_per_dictionary.py
+ERROR tests/test_dimensions_syllable_per_word.py
+ERROR tests/test_dimensions_twitter_reply_to.py
+ERROR tests/test_dimensions_verb_per_dictionary.py
+ERROR tests/test_dimensions_word_case.py
+ERROR tests/test_dimensions_word_length.py
+ERROR tests/test_dimensions_word_per_dictionary.py
+ERROR tests/test_dimensions_word_unique.py
+ERROR tests/test_dimensions_words_per_sentence.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 30 errors during collection !!!!!!!!!!!!!!!!!!!
+====================== 90 deselected, 30 errors in 0.58s =======================

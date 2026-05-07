@@ -8,7 +8,7 @@ from tqdm.auto import tqdm
 @dataclass
 class StanzaAnnotator:
     lang: str = "es"
-    processors: str = "tokenize,mwt,pos,ner"
+    processors: str = "tokenize,mwt,pos,lemma,ner,depparse"
     use_gpu: bool = False
     pos_batch_size: int = 8000
     ner_batch_size: int = 32
@@ -94,3 +94,30 @@ def format_tagged_ner(doc) -> str:
         )
         for sent in doc.sentences
     )
+    
+def format_tagged_morph(doc) -> str:
+    items = []
+
+    for sent in doc.sentences:
+        for word in sent.words:
+            feats = word.feats or ""
+
+            if feats:
+                items.append(f"{word.text}__({feats})")
+
+    return ", ".join(items)
+
+
+def format_tagged_dep(doc) -> str:
+    items = []
+
+    for sent in doc.sentences:
+        for word in sent.words:
+            deprel = word.deprel or ""
+            head = word.head or 0
+
+            items.append(
+                f"{word.text}__({deprel})({head})"
+            )
+
+    return ", ".join(items)

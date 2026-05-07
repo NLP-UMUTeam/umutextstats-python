@@ -49,20 +49,6 @@
                             <universal>Gender=Masc</universal>
                             <description>Percentage of grammatically masculine words. In Spanish, masculine gender is the unmarked or inclusive form</description>
                         </dimension>
-                        
-                        <dimension>
-                            <key>morphosyntax-gender-words-neutral</key>
-                            <class>POSTaggingTag</class>
-                            <universal>Gender=Neut</universal>
-                            <description>Percentage of grammatically neutral words. Common in articles, abstract concepts, or certain demonstratives among others</description>
-                        </dimension>
-                        
-                        <dimension>
-                            <key>morphosyntax-gender-words-common</key>
-                            <class>POSTaggingTag</class>
-                            <universal>Gender=Com</universal>
-                            <description>Grammatically neutral words. Added for languages that do not distinguish masculine or feminine most of the time but they do distinguish between neutral or non-neutral forms.</description>
-                        </dimension>
                     </dimensions>
                 </dimension>
                 
@@ -372,42 +358,10 @@
 
                             <dimensions>
                                 <dimension>
-                                    <key>morphosyntax-morphology-adverbs-time</key>
-                                    <class>POSTaggingTag</class>
-                                    <tag>ADV</tag>
-                                    <universal>AdvType=Tim</universal>
-                                    <description>Percentage of adverbs of time</description>
-                                </dimension>
-                                
-                                <dimension>
-                                    <key>morphosyntax-morphology-adverbs-mode</key>
-                                    <class>POSTaggingTag</class>
-                                    <tag>ADV</tag>
-                                    <universal>AdvType=Man</universal>
-                                    <description>Percentage of adverbs of mode</description>
-                                </dimension>
-                                
-                                <dimension>
-                                    <key>morphosyntax-morphology-adverbs-place</key>
-                                    <class>POSTaggingTag</class>
-                                    <tag>ADV</tag>
-                                    <universal>AdvType=Loc</universal>
-                                    <description>Percentage of adverbs of place</description>
-                                </dimension>
-                                
-                                <dimension>
                                     <key>morphosyntax-morphology-adverbs-interrogative</key>
                                     <class>WordPerDictionary</class>
                                     <dictionary>adverbs-interrogative</dictionary>
                                     <description>Percentage of interrogative adverbs</description>
-                                </dimension>
-                                
-                                <dimension>
-                                    <key>morphosyntax-morphology-adverbs-cause</key>
-                                    <class>POSTaggingTag</class>
-                                    <tag>ADV</tag>
-                                    <universal>AdvType=Cau</universal>
-                                    <description>Percentage of causal adverbs</description>
                                 </dimension>
                                 
                                 <dimension>
@@ -429,14 +383,6 @@
                                     <class>WordPerDictionary</class>
                                     <dictionary>adverbs-affirmation</dictionary>
                                     <description>Percentage of affirmation adverbs</description>
-                                </dimension>
-                                
-                                <dimension>
-                                    <key>morphosyntax-morphology-adverbs-quantity</key>
-                                    <class>POSTaggingTag</class>
-                                    <tag>ADV</tag>
-                                    <universal>AdvType=Deg</universal>
-                                    <description>Percentage of adverbs that expresses quantity</description>
                                 </dimension>
                                 
                                 <dimension>

@@ -174,21 +174,106 @@ Outputs include:
 
 ---
 
-# Cache
+## Cache Management
 
-By default, intermediate stages are cached in:
+`umutextstats` includes a local cache system to avoid recomputing
+expensive NLP pipelines, embeddings, and feature extraction steps.
 
-```text
-.cache/
+The cache is automatically invalidated when relevant processing
+parameters change (for example processors, GPU usage, or batch sizes).
+
+---
+
+### Show cache information
+
+Display cache directory, total files, and size:
+
+```bash
+umutextstats cache info
 ```
 
-Cached stages include:
+Example output:
 
-- Preprocessing
-- Common computed features
-- Stanza annotations
+```text
+Cache dir: .umutextstats_cache
+Exists: True
+Files: 182
+Size: 4.2 GB
+```
 
-Each stage stores only its own generated columns to avoid overwriting intermediate pipeline data.
+---
+
+### List cache files
+
+Show cached files ordered by most recent usage:
+
+```bash
+umutextstats cache list
+```
+
+Limit the number of displayed files:
+
+```bash
+umutextstats cache list --limit 100
+```
+
+Example output:
+
+```text
+2025-08-12 11:30:42      12.4 MB  stanza/abc123.pkl
+2025-08-12 11:28:01      84.1 MB  embeddings/def456.parquet
+```
+
+---
+
+### Prune old cache files
+
+Delete cache files older than a given number of days:
+
+```bash
+umutextstats cache prune --older-than-days 30
+```
+
+Skip confirmation:
+
+```bash
+umutextstats cache prune --older-than-days 30 --yes
+```
+
+---
+
+### Clear the entire cache
+
+Delete the full cache directory:
+
+```bash
+umutextstats cache clear
+```
+
+Skip confirmation:
+
+```bash
+umutextstats cache clear --yes
+```
+
+---
+
+### Custom cache directory
+
+All cache commands support a custom cache directory:
+
+```bash
+umutextstats cache info --cache-dir .cache_dev
+```
+
+---
+
+### Notes
+
+- Cache keys are parameter-aware.
+- Different NLP processor configurations generate different cache entries.
+- Cache cleanup is safe and only removes cached artifacts.
+- Recommended for large NLP pipelines and embedding workflows.
 
 ---
 

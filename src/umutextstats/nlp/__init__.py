@@ -3,6 +3,8 @@ from umutextstats.nlp.stanza_annotator import (
     StanzaAnnotator,
     format_tagged_ner,
     format_tagged_pos,
+    format_tagged_morph,
+    format_tagged_dep,
 )
 
 
@@ -13,6 +15,8 @@ def annotate_dataframe_with_stanza(
     doc_column: str = "stanza_doc",
     pos_column: str = "tagged_pos",
     ner_column: str = "tagged_ner",
+    morph_column: str = "tagged_morph",
+    dep_column: str = "tagged_dep",
     annotator: StanzaAnnotator | None = None,
     use_cache: bool = True,
     cache: CacheManager | None = None,
@@ -23,6 +27,8 @@ def annotate_dataframe_with_stanza(
         "input_column": input_column,
         "pos_column": pos_column,
         "ner_column": ner_column,
+        "morph_column": morph_column,
+        "dep_column": dep_column,
         "lang": annotator.lang if annotator else StanzaAnnotator.lang,
         "processors": annotator.processors if annotator else StanzaAnnotator.processors,
         "use_gpu": annotator.use_gpu if annotator else StanzaAnnotator.use_gpu,
@@ -33,11 +39,18 @@ def annotate_dataframe_with_stanza(
 
     key = cache.build_key(input_path, "stanza", params)
 
+    output_columns = [
+        pos_column,
+        ner_column,
+        morph_column,
+        dep_column,
+    ]
+
     if use_cache:
         cached = cache.load("stanza", key)
         if cached is not None:
-            df[pos_column] = cached[pos_column]
-            df[ner_column] = cached[ner_column]
+            for column in output_columns:
+                df[column] = cached[column]
             return df
 
     # Lazy initialization: Stanza only loads if cache is missing
@@ -51,11 +64,13 @@ def annotate_dataframe_with_stanza(
 
     df[pos_column] = df[doc_column].apply(format_tagged_pos)
     df[ner_column] = df[doc_column].apply(format_tagged_ner)
+    df[morph_column] = df[doc_column].apply(format_tagged_morph)
+    df[dep_column] = df[doc_column].apply(format_tagged_dep)
 
     if doc_column in df.columns:
         df = df.drop(columns=[doc_column])
 
     if use_cache:
-        cache.save(df[[pos_column, ner_column]], "stanza", key)
+        cache.save(df[output_columns], "stanza", key)
 
     return df

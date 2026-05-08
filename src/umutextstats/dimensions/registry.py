@@ -37,6 +37,11 @@ from umutextstats.dimensions.words_per_sentence import WordPerSentenceDimension
 from umutextstats.dimensions.word_unique import WordUniqueDimension
 from umutextstats.dimensions.word_case import WordCase
 from umutextstats.dimensions.word_length import WordLengthDimension
+from umutextstats.dimensions.dependency_tag import DependencyTag
+from umutextstats.dimensions.dependency_depth import DependencyDepthDimension
+from umutextstats.dimensions.dependency_distance import DependencyDistanceDimension
+from umutextstats.dimensions.root_pos_tag import RootPOSTagDimension
+from umutextstats.dimensions.passive_voice_dependency import PassiveVoiceDependencyDimension
 
 # =========================
 # Registry
@@ -76,6 +81,11 @@ DIMENSION_REGISTRY: dict[str, Type[BaseDimension]] = {
     "WordUniqueDimension": WordUniqueDimension,
     "WordCase": WordCase,
     "WordLengthDimension": WordLengthDimension,
+    "DependencyTag": DependencyTag,
+    "DependencyDepthDimension": DependencyDepthDimension,
+    "DependencyDistanceDimension": DependencyDistanceDimension,
+    "RootPOSTagDimension": RootPOSTagDimension,
+    "PassiveVoiceDependencyDimension": PassiveVoiceDependencyDimension
 }
 
 

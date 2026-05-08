@@ -71,9 +71,11 @@ class StanzaAnnotator:
 
 
 def format_tagged_pos(doc) -> str:
-    items = []
+    sentences = []
 
     for sent in doc.sentences:
+        items = []
+
         for word in sent.words:
             tag = word.upos or word.xpos or ""
             feats = word.feats or ""
@@ -83,7 +85,9 @@ def format_tagged_pos(doc) -> str:
             else:
                 items.append(f"{word.text}__({tag})")
 
-    return ", ".join(items)
+        sentences.append(", ".join(items))
+
+    return " || ".join(sentences)
 
 
 def format_tagged_ner(doc) -> str:
@@ -109,9 +113,11 @@ def format_tagged_morph(doc) -> str:
 
 
 def format_tagged_dep(doc) -> str:
-    items = []
+    sentences = []
 
     for sent in doc.sentences:
+        items = []
+
         for word in sent.words:
             deprel = word.deprel or ""
             head = word.head or 0
@@ -120,4 +126,6 @@ def format_tagged_dep(doc) -> str:
                 f"{word.text}__({deprel})({head})"
             )
 
-    return ", ".join(items)
+        sentences.append(", ".join(items))
+
+    return " || ".join(sentences)

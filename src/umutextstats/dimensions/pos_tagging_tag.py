@@ -1,5 +1,3 @@
-# src/umutextstats/dimensions/pos_tagging_tag.py
-
 import regex as re
 
 from umutextstats.dimensions.base import BaseDimension
@@ -66,18 +64,19 @@ class POSTaggingTag(BaseDimension):
 
         items = []
 
-        for raw_item in tagged_text.split(", "):
-            match = POS_ITEM_REGEX.fullmatch(raw_item.strip())
+        for sentence in tagged_text.split(" || "):
+            for raw_item in sentence.split(", "):
+                match = POS_ITEM_REGEX.fullmatch(raw_item.strip())
 
-            if not match:
-                continue
+                if not match:
+                    continue
 
-            items.append(
-                {
-                    "word": match.group("word"),
-                    "tag": match.group("tag") or "",
-                    "feats": match.group("feats") or "",
-                }
-            )
+                items.append(
+                    {
+                        "word": match.group("word"),
+                        "tag": match.group("tag") or "",
+                        "feats": match.group("feats") or "",
+                    }
+                )
 
         return items

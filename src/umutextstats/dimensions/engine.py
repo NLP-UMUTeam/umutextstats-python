@@ -72,6 +72,14 @@ class DimensionEngine:
                 return
 
             dimension_cls = resolve_dimension(dimension.class_name)
+            
+            if class_name == "RatioDimension":
+                data[key] = self._compute_ratio_dimension(
+                    dimension,
+                    data,
+                    len(df),
+                )
+                return
 
             if dimension_cls is None:
                 if self.include_unimplemented:
@@ -160,6 +168,41 @@ class DimensionEngine:
                 input_column="tagged_pos",
                 postagger_tag=self._param(dimension, "tag"),
                 postagger_universal=self._param(dimension, "universal"),
+            )
+            
+        if class_name == "DependencyDepthDimension":
+            return dimension_cls(
+                key=dimension.key,
+                input_column="tagged_dep",
+                mode=self._param(dimension, "mode", "max"),
+            )
+            
+        if class_name == "DependencyDistanceDimension":
+            return dimension_cls(
+                key=dimension.key,
+                input_column="tagged_dep",
+                mode=self._param(dimension, "mode", "mean"),
+            )
+            
+        if class_name == "RootPOSTagDimension":
+            return dimension_cls(
+                key=dimension.key,
+                input_column="tagged_pos",
+                tagged_dep_column="tagged_dep",
+                tag=self._param(dimension, "tag"),
+            )
+            
+        if class_name == "PassiveVoiceDependencyDimension":
+            return dimension_cls(
+                key=dimension.key,
+                input_column="tagged_dep",
+            )
+            
+        if class_name == "DependencyTag":
+            return dimension_cls(
+                key=dimension.key,
+                input_column="tagged_dep",
+                deprel=self._param(dimension, "deprel"),
             )
 
         if class_name == "POSTaggingExpression":
@@ -301,6 +344,41 @@ class DimensionEngine:
             input_column=input_column,
         )
         
+        
+    def _compute_ratio_dimension(self, dimension, data, n_rows):
+        numerator_keys = self._split_param_list(
+            self._param(dimension, "numerator", "")
+        )
+        denominator_keys = self._split_param_list(
+            self._param(dimension, "denominator", "")
+        )
+
+        scale = float(self._param(dimension, "scale") or 1.0)
+        zero_division = float(self._param(dimension, "zero_division") or 0.0)
+
+        missing = [
+            key
+            for key in numerator_keys + denominator_keys
+            if key not in data
+        ]
+
+        if missing:
+            raise ValueError(
+                f"Missing columns for RatioDimension '{dimension.key}': "
+                f"{', '.join(missing)}"
+            )
+
+        numerator = self._sum_data_keys(data, numerator_keys, n_rows)
+        denominator = self._sum_data_keys(data, denominator_keys, n_rows)
+
+        result = numerator / denominator.replace(0, pd.NA)
+        result = (
+            pd.to_numeric(result, errors="coerce")
+            .fillna(zero_division)
+        )
+
+        return result * scale
+        
     def _param(self, dimension, name: str, default=None):
         value = dimension.params.get(name)
 
@@ -341,3 +419,23 @@ class DimensionEngine:
         )
 
         return self._bool_value(value, default=dimension.disabled_regexp)
+        
+        
+    def _split_param_list(self, value: str) -> list[str]:
+        return [
+            item.strip()
+            for item in str(value).split("|")
+            if item.strip()
+        ]
+
+
+    def _sum_data_keys(self, data, keys, n_rows):
+        if not keys:
+            return pd.Series([0.0] * n_rows)
+
+        frame = pd.DataFrame({
+            key: data[key]
+            for key in keys
+        })
+
+        return frame.apply(pd.to_numeric, errors="coerce").fillna(0).sum(axis=1)

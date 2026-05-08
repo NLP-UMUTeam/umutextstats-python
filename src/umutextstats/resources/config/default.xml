@@ -2073,16 +2073,6 @@
                             <separator>by-sentence</separator>
                         </dimension>
                         
-
-                        
-                        <!-- Sentence pasive count -->
-                        <dimension>
-                            <key>stylometry-sentences-pasive-percentage</key>
-                            <class>SentencePerDictionary</class>
-                            <description>Counts how many sentences with pasive voice within the text</description>
-                            <dictionary>sentences-with-pasive-voice</dictionary>
-                        </dimension>
-                        
                         
                         <!-- Sentences with conversations -->
                         <dimension>
@@ -2944,6 +2934,436 @@
             </dimensions>
         </dimension>
         <!-- End of twitter dimension -->
+        
+
+        <!-- Syntax / Universal Dependencies -->
+        <dimension>
+            <key>syntax</key>
+            <dimensions>
+
+                <dimension>
+                    <key>syntax-passive-voice</key>
+                    <class>PassiveVoiceDependencyDimension</class>
+                    <description>Percentage of sentences using passive voice</description>
+                </dimension>
+
+                <!-- Dependency counts -->
+                <dimension>
+                    <key>syntax-dependencies</key>
+                    <strategy>CompositeStrategyAvg</strategy>
+                    <class>CompositeDimension</class>
+                    <description>Average of Universal Dependencies syntactic relations</description>
+                    <dimensions>
+
+                        <dimension>
+                            <key>syntax-dependencies-subjects</key>
+                            <class>DependencyTag</class>
+                            <deprel>nsubj</deprel>
+                            <description>Percentage of nominal subjects</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-objects</key>
+                            <class>DependencyTag</class>
+                            <deprel>obj</deprel>
+                            <description>Percentage of direct objects</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-indirect-objects</key>
+                            <class>DependencyTag</class>
+                            <deprel>iobj</deprel>
+                            <description>Percentage of indirect objects</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-obliques</key>
+                            <class>DependencyTag</class>
+                            <deprel>obl</deprel>
+                            <description>Percentage of oblique complements</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-adjectival-modifiers</key>
+                            <class>DependencyTag</class>
+                            <deprel>amod</deprel>
+                            <description>Percentage of adjectival modifiers</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-adverbial-modifiers</key>
+                            <class>DependencyTag</class>
+                            <deprel>advmod</deprel>
+                            <description>Percentage of adverbial modifiers</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-nominal-modifiers</key>
+                            <class>DependencyTag</class>
+                            <deprel>nmod</deprel>
+                            <description>Percentage of nominal modifiers</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-appositions</key>
+                            <class>DependencyTag</class>
+                            <deprel>appos</deprel>
+                            <description>Percentage of appositions</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-coordination</key>
+                            <class>DependencyTag</class>
+                            <deprel>conj</deprel>
+                            <description>Percentage of coordinated elements</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-coordinating-conjunctions</key>
+                            <class>DependencyTag</class>
+                            <deprel>cc</deprel>
+                            <description>Percentage of coordinating conjunction links</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-clausal-complements</key>
+                            <class>DependencyTag</class>
+                            <deprel>ccomp</deprel>
+                            <description>Percentage of clausal complements</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-open-clausal-complements</key>
+                            <class>DependencyTag</class>
+                            <deprel>xcomp</deprel>
+                            <description>Percentage of open clausal complements</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-adverbial-clauses</key>
+                            <class>DependencyTag</class>
+                            <deprel>advcl</deprel>
+                            <description>Percentage of adverbial clauses</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-relative-clauses</key>
+                            <class>DependencyTag</class>
+                            <deprel>acl:relcl</deprel>
+                            <description>Percentage of relative clauses</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-parataxis</key>
+                            <class>DependencyTag</class>
+                            <deprel>parataxis</deprel>
+                            <description>Percentage of parataxis relations</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-determiners</key>
+                            <class>DependencyTag</class>
+                            <deprel>det</deprel>
+                            <description>Percentage of determiners</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-case-markers</key>
+                            <class>DependencyTag</class>
+                            <deprel>case</deprel>
+                            <description>Percentage of case markers and prepositions</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-markers</key>
+                            <class>DependencyTag</class>
+                            <deprel>mark</deprel>
+                            <description>Percentage of subordinate clause markers</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-discourse</key>
+                            <class>DependencyTag</class>
+                            <deprel>discourse</deprel>
+                            <description>Percentage of discourse elements</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-dependencies-vocatives</key>
+                            <class>DependencyTag</class>
+                            <deprel>vocative</deprel>
+                            <description>Percentage of vocatives</description>
+                        </dimension>
+
+                    </dimensions>
+                </dimension>
+
+                <!-- Syntax ratios -->
+                <dimension>
+                    <key>syntax-ratios</key>
+                    <strategy>CompositeStrategyAvg</strategy>
+                    <class>CompositeDimension</class>
+                    <description>Average of syntactic ratio dimensions</description>
+                    <dimensions>
+
+                        <dimension>
+                            <key>syntax-ratios-core-arguments</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects|
+                                syntax-dependencies-indirect-objects
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects|
+                                syntax-dependencies-indirect-objects|
+                                syntax-dependencies-obliques
+                            </denominator>
+                            <description>Ratio of core arguments over all complements</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-ratios-subordination</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-clausal-complements|
+                                syntax-dependencies-open-clausal-complements|
+                                syntax-dependencies-adverbial-clauses|
+                                syntax-dependencies-relative-clauses
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects|
+                                syntax-dependencies-obliques|
+                                syntax-dependencies-coordination|
+                                syntax-dependencies-parataxis
+                            </denominator>
+                            <description>Ratio of subordinate structures over general syntactic structure</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-ratios-modification-density</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-adjectival-modifiers|
+                                syntax-dependencies-adverbial-modifiers|
+                                syntax-dependencies-nominal-modifiers
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects
+                            </denominator>
+                            <description>Modifier density relative to core arguments</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-ratios-coordination-density</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-coordination|
+                                syntax-dependencies-coordinating-conjunctions
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects|
+                                syntax-dependencies-obliques
+                            </denominator>
+                            <description>Coordination density relative to argument structure</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-ratios-determination</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-determiners
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects
+                            </denominator>
+                            <description>Determination load over nominal arguments</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-ratios-clausal-density</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-clausal-complements|
+                                syntax-dependencies-open-clausal-complements|
+                                syntax-dependencies-adverbial-clauses|
+                                syntax-dependencies-relative-clauses|
+                                syntax-dependencies-parataxis
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects
+                            </denominator>
+                            <description>Global clausal density</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-ratios-nominal-complexity</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-adjectival-modifiers|
+                                syntax-dependencies-nominal-modifiers|
+                                syntax-dependencies-appositions
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects
+                            </denominator>
+                            <description>Nominal phrase complexity</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-ratios-adverbial-load</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-adverbial-modifiers|
+                                syntax-dependencies-adverbial-clauses
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects
+                            </denominator>
+                            <description>Adverbial load relative to core arguments</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-ratios-prepositional-load</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                syntax-dependencies-case-markers|
+                                syntax-dependencies-obliques
+                            </numerator>
+                            <denominator>
+                                syntax-dependencies-subjects|
+                                syntax-dependencies-objects
+                            </denominator>
+                            <description>Prepositional and oblique structure density</description>
+                        </dimension>
+
+                    </dimensions>
+                </dimension>
+                
+                
+                <dimension>
+                    <key>syntax-complexity</key>
+                    <strategy>CompositeStrategyAvg</strategy>
+                    <class>CompositeDimension</class>
+                    <description>Syntactic complexity based on dependency structure</description>
+                    <dimensions>
+
+                        <dimension>
+                            <key>syntax-complexity-dependency-depth-max</key>
+                            <class>DependencyDepthDimension</class>
+                            <mode>max</mode>
+                            <description>Maximum dependency tree depth</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-complexity-dependency-depth-mean</key>
+                            <class>DependencyDepthDimension</class>
+                            <mode>mean</mode>
+                            <description>Mean dependency tree depth</description>
+                        </dimension>
+                        
+                        <dimension>
+                            <key>syntax-complexity-dependency-distance-mean</key>
+                            <class>DependencyDistanceDimension</class>
+                            <mode>mean</mode>
+                            <description>Mean linear dependency distance</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-complexity-dependency-distance-max</key>
+                            <class>DependencyDistanceDimension</class>
+                            <mode>max</mode>
+                            <description>Maximum linear dependency distance</description>
+                        </dimension>
+
+                    </dimensions>
+                </dimension>
+
+
+                <dimension>
+                    <key>syntax-root</key>
+                    <strategy>CompositeStrategyAvg</strategy>
+                    <class>CompositeDimension</class>
+                    <description>Distribution of sentence root POS tags</description>
+                    <dimensions>
+
+                        <dimension>
+                            <key>syntax-root-verb</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>VERB</tag>
+                            <description>Percentage of sentences whose root is a verb</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-root-noun</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>NOUN</tag>
+                            <description>Percentage of sentences whose root is a common noun</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-root-proper-noun</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>PROPN</tag>
+                            <description>Percentage of sentences whose root is a proper noun</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-root-adjective</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>ADJ</tag>
+                            <description>Percentage of sentences whose root is an adjective</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-root-auxiliary</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>AUX</tag>
+                            <description>Percentage of sentences whose root is an auxiliary</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-root-interjection</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>INTJ</tag>
+                            <description>Percentage of sentences whose root is an interjection</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-root-adverb</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>ADV</tag>
+                            <description>Percentage of sentences whose root is an adverb</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-root-pronoun</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>PRON</tag>
+                            <description>Percentage of sentences whose root is a pronoun</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>syntax-root-numeral</key>
+                            <class>RootPOSTagDimension</class>
+                            <tag>NUM</tag>
+                            <description>Percentage of sentences whose root is a numeral</description>
+                        </dimension>
+
+                    </dimensions>
+                </dimension>
+
+
+            </dimensions>
+        </dimension>
         
 
     </dimensions>

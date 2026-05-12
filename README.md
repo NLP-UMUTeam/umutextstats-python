@@ -370,3 +370,21 @@ pytest
 This project is still under development.
 
 Results, APIs and internal feature implementations may change while the Python version is being aligned with the original UMUTextStats behavior.
+
+
+---
+
+
+### Acknowledgements
+This work is part of the research project AIInFunds (PDC2021-121112-I00), funded by MCIN/AEI/10.13039/501100011033 and by the European Union NextGenerationEU/PRTR. This work is also part of the research project LaTe4PSP (PID2019-107652RB-I00), funded by MCIN/AEI/10.13039/501100011033. Besides, it was partially supported by Fundacion Séneca -the Regional Agency for Science and Technology of Murcia (Spain)- through project 20963/PI/18. In addition, José Antonio García-Díaz is supported by Banco Santander and the University of Murcia through the Doctorado Industrial programme
+
+### Citation
+```
+@inproceedings{garcia2022umutextstats,
+  title={Umutextstats: A linguistic feature extraction tool for spanish},
+  author={Garc{\'\i}a-D{\'\i}az, Jos{\'e} Antonio and Vivancos-Vicente, Pedro Jos{\'e} and Almela, Angela and Valencia-Garc{\'\i}a, Rafael},
+  booktitle={Proceedings of the thirteenth language resources and evaluation conference},
+  pages={6035--6044},
+  year={2022}
+}
+```

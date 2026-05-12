@@ -103,3 +103,85 @@ def test_cache_cli_prune(tmp_path):
 
     remaining_files = [path for path in tmp_path.rglob("*") if path.is_file()]
     assert remaining_files == []
+    
+    
+from umutextstats.cli.analyze import resolve_cache_policy
+
+
+def test_cache_policy_normal_run_reads_and_writes():
+    assert resolve_cache_policy(
+        use_cache=True,
+        is_stdin=False,
+        head=None,
+        only=None,
+    ) == (True, True)
+
+
+def test_cache_policy_head_reads_but_does_not_write():
+    assert resolve_cache_policy(
+        use_cache=True,
+        is_stdin=False,
+        head=5,
+        only=None,
+    ) == (True, False)
+
+
+def test_cache_policy_only_reads_but_does_not_write():
+    assert resolve_cache_policy(
+        use_cache=True,
+        is_stdin=False,
+        head=None,
+        only="stylometry",
+    ) == (True, False)
+
+
+def test_cache_policy_stdin_disables_cache():
+    assert resolve_cache_policy(
+        use_cache=True,
+        is_stdin=True,
+        head=None,
+        only=None,
+    ) == (False, False)
+
+
+def test_cache_policy_no_cache_disables_cache():
+    assert resolve_cache_policy(
+        use_cache=False,
+        is_stdin=False,
+        head=None,
+        only=None,
+    ) == (False, False)
+    
+    
+def test_cache_keys_include_head(tmp_path):
+    cache = CacheManager(tmp_path)
+
+    params_full = {
+        "input_column": "text_norm",
+        "cache_version": 1,
+        "head": None,
+    }
+
+    params_head = {
+        "input_column": "text_norm",
+        "cache_version": 1,
+        "head": 5,
+    }
+
+    key_full = cache.build_key("dataset.csv", "common_features", params_full)
+    key_head = cache.build_key("dataset.csv", "common_features", params_head)
+
+    assert key_full != key_head
+    
+    
+def resolve_cache_policy(
+    use_cache: bool,
+    is_stdin: bool,
+    head: int | None,
+    only: str | None,
+):
+    use_cache = use_cache and not is_stdin
+    read_cache = use_cache
+    write_cache = use_cache and head is None and only is None
+
+    return read_cache, write_cache

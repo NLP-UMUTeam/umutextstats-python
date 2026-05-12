@@ -1,8 +1,7 @@
-# src/umutextstats/cli/aggregate.py
-
 from __future__ import annotations
 
 import argparse
+import sys
 
 import pandas as pd
 
@@ -39,14 +38,27 @@ def add_aggregate_arguments(
     parser.add_argument(
         "-o",
         "--output",
-        default="aggregate.json",
-        help="Output aggregate file",
+        default=None,
+        help="Output aggregate file. If omitted, prints to stdout.",
     )
 
 
 def run_aggregate(args: argparse.Namespace) -> None:
-    features = pd.read_csv(args.features)
-    metadata = pd.read_csv(args.metadata)
+    
+    if args.features == "-" and args.metadata == "-":
+        raise ValueError(
+            "features and metadata cannot both be read from stdin"
+        )
+    
+    if args.features == "-":
+        features = pd.read_csv(sys.stdin)
+    else:
+        features = pd.read_csv(args.features)
+
+    if args.metadata == "-":
+        metadata = pd.read_csv(sys.stdin)
+    else:
+        metadata = pd.read_csv(args.metadata)
 
     if args.id_column not in features.columns:
         raise ValueError(
@@ -77,4 +89,7 @@ def run_aggregate(args: argparse.Namespace) -> None:
         exclude={args.id_column, args.group_by},
     )
 
-    write_output(aggregate, args.output)
+    if args.output:
+        write_output(aggregate, args.output)
+    else:
+        print(aggregate.to_json(orient="records", indent=2))

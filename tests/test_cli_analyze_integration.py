@@ -65,3 +65,6 @@ def test_cli_analyze_computes_offensive_dictionary(tmp_path, monkeypatch):
     print (features)
 
     assert value > 0
+    
+    
+    

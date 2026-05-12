@@ -45,18 +45,25 @@ def add_common_features_cached(
     input_path: str,
     input_column: str = "text_norm",
     use_cache: bool = True,
+    write_cache: bool = True,
     cache: CacheManager | None = None,
+    head: int | None = None,
 ):
     cache = cache or CacheManager()
 
     params = {
         "input_column": input_column,
         "columns": COMMON_FEATURE_COLUMNS,
+        "cache_version": 1,
+        "head": head,
     }
 
-    key = cache.build_key(input_path, "common_features", params)
+    key = None
 
-    if use_cache:
+    if use_cache or write_cache:
+        key = cache.build_key(input_path, "common_features", params)
+
+    if use_cache and key is not None:
         cached = cache.load("common_features", key)
 
         if cached is not None:
@@ -70,7 +77,7 @@ def add_common_features_cached(
         input_column=input_column,
     )
 
-    if use_cache:
+    if write_cache and key is not None:
         cache.save(
             df[COMMON_FEATURE_COLUMNS],
             "common_features",

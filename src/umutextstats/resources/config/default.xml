@@ -1256,6 +1256,52 @@
                             </dimensions>
                         </dimension>
                         <!-- End of Verbs -->
+                        
+                        
+                        <!-- Ratios -->
+                        <dimension>
+                            <key>morphosyntax-ratios-nominal-to-verbal</key>
+                            <class>RatioDimension</class>
+                            <numerator>morphosyntax-morphology-nouns</numerator>
+                            <denominator>morphosyntax-morphology-verbs</denominator>
+                            <description>Nominal load over verbal load</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>morphosyntax-ratios-modifiers-to-nouns</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                morphosyntax-morphology-adjectives|
+                                morphosyntax-morphology-adverbs
+                            </numerator>
+                            <denominator>morphosyntax-morphology-nouns</denominator>
+                            <description>Modifier load over nouns</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>morphosyntax-ratios-function-to-content</key>
+                            <class>RatioDimension</class>
+                            <numerator>
+                                morphosyntax-morphology-determiners|
+                                morphosyntax-morphology-prepositions|
+                                morphosyntax-morphology-conjunctions
+                            </numerator>
+                            <denominator>
+                                morphosyntax-morphology-nouns|
+                                morphosyntax-morphology-verbs|
+                                morphosyntax-morphology-adjectives|
+                                morphosyntax-morphology-adverbs
+                            </denominator>
+                            <description>Function word load over content word load</description>
+                        </dimension>
+
+                        <dimension>
+                            <key>morphosyntax-ratios-pronouns-to-nouns</key>
+                            <class>RatioDimension</class>
+                            <numerator>morphosyntax-morphology-pronouns</numerator>
+                            <denominator>morphosyntax-morphology-nouns</denominator>
+                            <description>Pronoun load over noun load</description>
+                        </dimension>
 
 
 
@@ -2483,6 +2529,40 @@
                     <class>WordPerDictionary</class>
                     <dictionary>home</dictionary>
                     <description>Percentage of words of related to home</description>
+                </dimension>
+                
+                
+                <!-- Ratios -->
+                <dimension>
+                    <key>lexical-ner-person-dominance</key>
+                    <class>RatioDimension</class>
+                    <numerator>lexical-persons</numerator>
+                    <denominator>lexical-locations|lexical-organisations|lexical-others</denominator>
+                    <description>Person entity dominance over non-person entities</description>
+                </dimension>
+
+                <dimension>
+                    <key>lexical-ner-institutional-load</key>
+                    <class>RatioDimension</class>
+                    <numerator>lexical-organisations</numerator>
+                    <denominator>lexical-persons|lexical-locations|lexical-others</denominator>
+                    <description>Organization entity dominance over other named entities</description>
+                </dimension>
+
+                <dimension>
+                    <key>lexical-ner-geographical-load</key>
+                    <class>RatioDimension</class>
+                    <numerator>lexical-locations</numerator>
+                    <denominator>lexical-persons|lexical-organisations|lexical-others</denominator>
+                    <description>Location entity dominance over other named entities</description>
+                </dimension>
+
+                <dimension>
+                    <key>lexical-ner-entity-specificity</key>
+                    <class>RatioDimension</class>
+                    <numerator>lexical-persons|lexical-locations|lexical-organisations</numerator>
+                    <denominator>lexical-others</denominator>
+                    <description>Specific named entity load over miscellaneous entities</description>
                 </dimension>
                 
                 

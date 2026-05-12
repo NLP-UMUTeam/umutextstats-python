@@ -19,7 +19,9 @@ def annotate_dataframe_with_stanza(
     dep_column: str = "tagged_dep",
     annotator: StanzaAnnotator | None = None,
     use_cache: bool = True,
+    write_cache: bool = True,
     cache: CacheManager | None = None,
+    head: int | None = None,
 ):
     cache = cache or CacheManager()
 
@@ -35,9 +37,14 @@ def annotate_dataframe_with_stanza(
         "pos_batch_size": annotator.pos_batch_size if annotator else StanzaAnnotator.pos_batch_size,
         "ner_batch_size": annotator.ner_batch_size if annotator else StanzaAnnotator.ner_batch_size,
         "batch_size_docs": annotator.batch_size_docs if annotator else StanzaAnnotator.batch_size_docs,
+        "cache_version": 1,
+        "head": head,
     }
 
-    key = cache.build_key(input_path, "stanza", params)
+    key = None
+
+    if use_cache or write_cache:
+        key = cache.build_key(input_path, "stanza", params)
 
     output_columns = [
         pos_column,
@@ -46,14 +53,13 @@ def annotate_dataframe_with_stanza(
         dep_column,
     ]
 
-    if use_cache:
+    if use_cache and key is not None:
         cached = cache.load("stanza", key)
         if cached is not None:
             for column in output_columns:
                 df[column] = cached[column]
             return df
 
-    # Lazy initialization: Stanza only loads if cache is missing
     annotator = annotator or StanzaAnnotator()
 
     df = annotator.annotate_dataframe(
@@ -70,7 +76,7 @@ def annotate_dataframe_with_stanza(
     if doc_column in df.columns:
         df = df.drop(columns=[doc_column])
 
-    if use_cache:
+    if write_cache and key is not None:
         cache.save(df[output_columns], "stanza", key)
 
     return df

@@ -172,6 +172,65 @@ Outputs include:
 - Feature rankings
 - Aggregate/group statistics
 
+
+---
+## UNIX Pipes and Standard Input
+UMUTextStats supports UNIX pipes and standard streams, making it easy to integrate into shell workflows.
+
+### Analyze from standard input
+
+```bash
+echo 'tweet
+hola mundo
+esto es una prueba' \
+| umutextstats analyze - -t tweet --only stylometry --no-stanza
+```
+
+### Analyze and summarize in a single pipeline
+
+```bash
+cat dataset.csv \
+| umutextstats analyze - -t tweet \
+    --only stylometry \
+    --head 100 \
+    --no-stanza \
+| umutextstats summarize - \
+    --rank-by mean \
+    --top 10
+```
+
+### Combine multiple feature families
+
+```bash
+cat dataset.csv \
+| umutextstats analyze - -t tweet \
+    --only 'stylometry|errors|register' \
+| umutextstats summarize - \
+    --rank-by nonzero_ratio
+```
+
+### Save intermediate features while still using pipes
+
+```bash
+cat dataset.csv \
+| umutextstats analyze - -t tweet -o features.csv
+
+umutextstats summarize features.csv \
+    --rank-by mean \
+    --top 20
+```
+
+### Quick exploratory analysis
+
+```bash
+cat dataset.csv \
+| umutextstats analyze - -t tweet \
+    --head 20 \
+    --only psycholinguistic-processes \
+| umutextstats summarize - \
+    --sparse-threshold 0.01
+```
+
 ---
 
 ## Cache Management

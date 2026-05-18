@@ -327,6 +327,96 @@ umutextstats cache info --cache-dir .cache_dev
 
 ---
 
+---
+
+# Configuration System
+
+UMUTextStats uses a hierarchical configuration system to define linguistic dimensions, feature groups, dictionaries and extraction strategies.
+
+The default configuration is distributed as a YAML file, while legacy XML configurations are still supported for compatibility.
+
+---
+
+## Convert configuration formats
+
+Convert XML configurations to YAML:
+
+```bash
+umutextstats config convert \
+    src/umutextstats/resources/config/default.xml \
+    default.yaml
+```
+
+---
+
+## Validate configuration files
+
+Validate a configuration file and detect common issues:
+
+```bash
+umutextstats config validate default.yaml
+```
+
+Validation checks currently include:
+
+- Duplicated dimension keys
+- Unknown dimension classes
+- Unknown composite strategies
+- Invalid ratio definitions
+- Missing required parameters
+
+Example output:
+
+```text
+[error] stylometry-words: Duplicated dimension key.
+[error] readability: Unknown class: UnknownDimension
+```
+
+---
+
+## Inspect the configuration tree
+
+Print the hierarchical dimension tree:
+
+```bash
+umutextstats config tree
+```
+
+Limit the displayed depth:
+
+```bash
+umutextstats config tree --max-depth 2
+```
+
+Example output:
+
+```text
+└── morphosyntax
+    ├── morphosyntax-gender
+    │   ├── morphosyntax-gender-feminine
+    │   └── morphosyntax-gender-masculine
+    └── morphosyntax-number
+```
+
+---
+
+## Custom configurations
+
+Use a custom configuration file during analysis:
+
+```bash
+umutextstats analyze dataset.csv \
+    -t tweet \
+    -c custom_config.yaml \
+    -o features.csv
+```
+
+Both YAML and legacy XML configuration files are supported.
+
+---
+
+
+
 ### Notes
 
 - Cache keys are parameter-aware.

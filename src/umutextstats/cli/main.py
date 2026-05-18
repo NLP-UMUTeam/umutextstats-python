@@ -8,6 +8,7 @@ from umutextstats.cli.analyze import add_analyze_arguments, run_analyze
 from umutextstats.cli.summarize import add_summarize_arguments, run_summarize
 from umutextstats.cli.aggregate import add_aggregate_arguments, run_aggregate
 from umutextstats.cli.cache import add_cache_arguments, run_cache
+from umutextstats.cli.config import add_config_arguments, run_config
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -48,6 +49,13 @@ def build_parser() -> argparse.ArgumentParser:
     add_cache_arguments(cache_parser)
     cache_parser.set_defaults(func=run_cache)
 
+
+    config_parser = subparsers.add_parser(
+        "config",
+        help="Configuration utilities",
+    )
+    add_config_arguments(config_parser)
+    config_parser.set_defaults(func=run_config)
 
     return parser
 

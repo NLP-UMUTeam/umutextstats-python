@@ -7,11 +7,9 @@ from dataclasses import dataclass
 
 from umutextstats.config.explain import find_dimension
 from umutextstats.config.models import UMUTextStatsConfig
-from umutextstats.config.params import dictionary_param, disabled_regexp_param
 from umutextstats.dictionaries import DictionaryLoader
 from umutextstats.dimensions.pos_tagging_tag import POS_ITEM_REGEX
 from umutextstats.nlp.stanza_annotator import StanzaAnnotator, format_tagged_pos
-
 
 @dataclass(frozen=True)
 class InspectMatch:
@@ -82,12 +80,16 @@ def _inspect_pattern_dimension(dimension, text: str) -> DimensionInspection:
 
 
 def _inspect_dictionary_dimension(dimension, text: str) -> DimensionInspection:
-    dictionary_name = dictionary_param(dimension)
+    dictionary_name = (
+        dimension.dictionary
+        or dimension.params.get("dictionary")
+        or dimension.params.get("dictionaries")
+    )
 
     if not dictionary_name:
         raise ValueError(f"Dictionary dimension without dictionary: {dimension.key}")
 
-    use_regex = not disabled_regexp_param(dimension)
+    use_regex = not dimension.disabled_regexp
 
     matches: list[InspectMatch] = []
     discarded_matches: list[InspectMatch] = []

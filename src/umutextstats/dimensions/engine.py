@@ -5,7 +5,8 @@ import pandas as pd
 
 from umutextstats.config.models import DimensionConfig, UMUTextStatsConfig
 from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
-
+from umutextstats.config.params import param, split_param_list
+from umutextstats.dimensions.factory import build_dimension
 
 class DimensionEngine:
     def __init__(
@@ -86,7 +87,11 @@ class DimensionEngine:
                     data[key] = [""] * len(df)
                 return
 
-            instance = self._build_dimension(dimension, dimension_cls)
+            instance = build_dimension(
+                dimension=dimension,
+                dimension_cls=dimension_cls,
+                default_input_column=self.input_column,
+            )
             data[key] = instance.compute(df)
 
     def _compute_composite_dimension(self, dimension, data, n_rows):
@@ -133,228 +138,18 @@ class DimensionEngine:
             class_name=class_name or "",
         )
 
-    def _build_dimension(self, dimension: DimensionConfig, dimension_cls):
-
-        class_name = normalize_class_name(dimension.class_name)
-
-        input_column = (
-            "text_raw"
-            if dimension.use_original_input
-            else self.input_column
-        )
-
-        params = dimension.params
-
-        if class_name == "WordPerDictionary":
-            return dimension_cls(
-                key=dimension.key,
-                dictionary_name=self._dictionary_param(dimension),
-                input_column=input_column,
-                percentage=self._percentage_param(dimension),
-                use_regex=not self._disabled_regexp_param(dimension),
-            )
-
-        if class_name == "PatternDimension":
-            return dimension_cls(
-                key=dimension.key,
-                pattern=self._param(dimension, "pattern", ""),
-                input_column=input_column,
-                percentage=self._percentage_param(dimension),
-            )
-
-        if class_name == "POSTaggingTag":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="tagged_pos",
-                postagger_tag=self._param(dimension, "tag"),
-                postagger_universal=self._param(dimension, "universal"),
-            )
-            
-        if class_name == "DependencyDepthDimension":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="tagged_dep",
-                mode=self._param(dimension, "mode", "max"),
-            )
-            
-        if class_name == "DependencyDistanceDimension":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="tagged_dep",
-                mode=self._param(dimension, "mode", "mean"),
-            )
-            
-        if class_name == "RootPOSTagDimension":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="tagged_pos",
-                tagged_dep_column="tagged_dep",
-                tag=self._param(dimension, "tag"),
-            )
-            
-        if class_name == "PassiveVoiceDependencyDimension":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="tagged_dep",
-            )
-            
-        if class_name == "DependencyTag":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="tagged_dep",
-                deprel=self._param(dimension, "deprel"),
-            )
-
-        if class_name == "POSTaggingExpression":
-            return dimension_cls(
-                key=dimension.key,
-                pattern=self._param(dimension, "pattern", ""),
-                input_column="tagged_pos",
-                percentage=self._percentage_param(dimension),
-            )
-
-        if class_name == "NERTaggingTag":
-            return dimension_cls(
-                key=dimension.key,
-                tag=self._param(dimension, "tag"),
-                input_column="tagged_ner",
-            )
-
-        if class_name == "EncliticsPersonalPronounsDictionary":
-            return dimension_cls(
-                key=dimension.key,
-                dictionary_name=self._dictionary_param(dimension),
-                input_column=input_column,
-            )
-
-        if class_name == "PeriphrasisDimension":
-            return dimension_cls(
-                key=dimension.key,
-                auxiliar_verbs=self._param(dimension, "auxiliar_verbs", ""),
-                input_column=input_column,
-                tagged_pos_column="tagged_pos",
-            )
-
-        if class_name == "CharacterCountDimension":
-            chars = self._param(dimension, "character", "")
-
-            if chars == "SPACE":
-                chars = " "
-
-            return dimension_cls(
-                key=dimension.key,
-                chars=chars,
-                input_column=input_column,
-            )
-
-        if class_name == "ErrorCapitalizationStartingWithLowerCaseDimension":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="text_raw",
-            )
-
-        if class_name == "ErrorStyleSentencesStartingWithNumbers":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="text_raw",
-            )
-
-        if class_name == "ErrorStyleSentencesStartingWithTheSameWord":
-            return dimension_cls(
-                key=dimension.key,
-                input_column="text_raw",
-            )
-
-        if class_name == "GrammaticalGenderDimension":
-            return dimension_cls(
-                key=dimension.key,
-                dictionary_name=self._dictionary_param(dimension),
-                input_column=input_column,
-                tagged_pos_column="tagged_pos",
-                percentage=self._percentage_param(dimension),
-                use_regex=not self._disabled_regexp_param(dimension),
-            )
-
-        if class_name == "LanguageDimension":
-            return dimension_cls(
-                key=dimension.key,
-                language=self._param(dimension, "language", ""),
-                input_column=input_column,
-            )
-
-        if class_name in {"RTIEDimension", "RTIEDeviationDimension"}:
-            return dimension_cls(
-                key=dimension.key,
-                input_column=input_column,
-                separator=self._param(dimension, "separator", "by-chunks"),
-            )
-
-        if class_name == "SentencePerDictionary":
-            return dimension_cls(
-                key=dimension.key,
-                dictionary_name=self._dictionary_param(dimension),
-                input_column=input_column,
-                percentage=self._percentage_param(dimension),
-            )
-
-        if class_name == "TwitterReplyToDimension":
-            return dimension_cls(
-                key=dimension.key,
-                dictionary_name=self._dictionary_param(dimension),
-                input_column="text_raw",
-            )
-
-        if class_name == "VerbPerDictionary":
-            return dimension_cls(
-                key=dimension.key,
-                dictionary_name=self._dictionary_param(dimension),
-                input_column=input_column,
-                percentage=self._percentage_param(dimension),
-            )
-
-        if class_name == "WordUniqueDimension":
-            return dimension_cls(
-                key=dimension.key,
-                input_column=input_column,
-                percentage=self._percentage_param(dimension),
-            )
-
-        if class_name == "WordCase":
-            return dimension_cls(
-                key=dimension.key,
-                comparator=(
-                    self._param(dimension, "word_comparator")
-                    or self._param(dimension, "comparator")
-                    or "upper"
-                ),
-                input_column="text_raw",
-            )
-
-        if class_name == "WordLengthDimension":
-            return dimension_cls(
-                key=dimension.key,
-                length=self._param(dimension, "length"),
-                comparator=self._param(dimension, "comparator", "="),
-                input_column=input_column,
-                percentage=self._percentage_param(dimension),
-            )
-
-        return dimension_cls(
-            key=dimension.key,
-            input_column=input_column,
-        )
         
         
     def _compute_ratio_dimension(self, dimension, data, n_rows):
-        numerator_keys = self._split_param_list(
-            self._param(dimension, "numerator", "")
+        numerator_keys = split_param_list(
+            param(dimension, "numerator", "")
         )
-        denominator_keys = self._split_param_list(
-            self._param(dimension, "denominator", "")
+        denominator_keys = split_param_list(
+            param(dimension, "denominator", "")
         )
 
-        scale = float(self._param(dimension, "scale") or 1.0)
-        zero_division = float(self._param(dimension, "zero_division") or 0.0)
+        scale = float(param(dimension, "scale") or 1.0)
+        zero_division = float(param(dimension, "zero_division") or 0.0)
 
         missing = [
             key
@@ -379,46 +174,7 @@ class DimensionEngine:
 
         return result * scale
         
-    def _param(self, dimension, name: str, default=None):
-        value = dimension.params.get(name)
 
-        if value is not None:
-            return value
-
-        return getattr(dimension, name, default)
-
-    def _bool_value(self, value, default: bool = False) -> bool:
-        if value is None:
-            return default
-
-        if isinstance(value, bool):
-            return value
-
-        if isinstance(value, str):
-            return value.strip().lower() in {"true", "1", "yes", "y"}
-
-        return bool(value)
-
-    def _dictionary_param(self, dimension) -> str:
-        return (
-            dimension.params.get("dictionary")
-            or dimension.params.get("dictionaries")
-            or getattr(dimension, "dictionary", None)
-            or ""
-        )
-
-    def _percentage_param(self, dimension) -> bool:
-        value = dimension.params.get("percentage", None)
-        return self._bool_value(value, default=dimension.percentage)
-
-    def _disabled_regexp_param(self, dimension) -> bool:
-        value = (
-            dimension.params.get("disabledregexp")
-            if "disabledregexp" in dimension.params
-            else dimension.params.get("disabled_regexp", None)
-        )
-
-        return self._bool_value(value, default=dimension.disabled_regexp)
         
         
     def _split_param_list(self, value: str) -> list[str]:

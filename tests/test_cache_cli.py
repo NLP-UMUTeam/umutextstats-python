@@ -1,8 +1,8 @@
 from __future__ import annotations
+from pathlib import Path
 
 import argparse
 import time
-
 import pandas as pd
 
 from umutextstats.cache import CacheManager
@@ -167,9 +167,11 @@ def test_cache_keys_include_head(tmp_path):
         "cache_version": 1,
         "head": 5,
     }
+    
+    
 
-    key_full = cache.build_key("dataset.csv", "common_features", params_full)
-    key_head = cache.build_key("dataset.csv", "common_features", params_head)
+    key_full = cache.build_key(Path(__file__).parent / "fixtures" / "sample.csv", "common_features", params_full)
+    key_head = cache.build_key(Path(__file__).parent / "fixtures" / "sample.csv", "common_features", params_head)
 
     assert key_full != key_head
     

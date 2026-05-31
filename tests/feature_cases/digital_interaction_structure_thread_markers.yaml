@@ -1,0 +1,29 @@
+cases:
+- text: "1/5 Empiezo explicación"
+  expected: 1
+
+- text: "Abro hilo sobre el tema"
+  expected: 1
+
+- text: "Sigo hilo con más datos"
+  expected: 1
+
+- text: "Hilo 2/5"
+  expected: 1
+
+- text: "This is a thread"
+  expected: 1
+
+- text: "Estoy sujetando un hilo"
+  expected: 0
+
+- text: "El hilo de coser se rompió"
+  expected: 0
+
+- text: "Página 1/5 del documento"
+  expected: 1
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

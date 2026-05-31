@@ -1,0 +1,38 @@
+cases:
+- text: "> Esto es una cita"
+  expected: 1
+
+- text: ">> Cita anidada"
+  expected: 1
+
+- text: "> Primera cita\n> Segunda cita"
+  expected: 2
+
+- text: "Texto normal\n> cita en segunda línea"
+  expected: 1
+
+- text: "  > cita con espacios delante"
+  expected: 1
+
+- text: "No es cita > aparece en medio"
+  expected: 0
+
+- text: "Comparación: 3 > 2"
+  expected: 0
+
+- text: "Operador en línea propia\n> 5"
+  expected: 1
+
+- text: "Flecha textual -> resultado"
+  expected: 0
+
+- text: "HTML <blockquote>texto</blockquote>"
+  expected: 0
+
+- text: "Email quoted\n> From: alguien\n> Sent: ayer"
+  expected: 2
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

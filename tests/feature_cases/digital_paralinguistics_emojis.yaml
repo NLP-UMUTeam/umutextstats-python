@@ -1,0 +1,44 @@
+cases:
+- text: "Me encanta esto 😍"
+  expected_min: 1
+
+- text: "😂😂😂 qué bueno"
+  expected_min: 3
+
+- text: "Vamos a la playa 🏖️ mañana"
+  expected_min: 1
+
+- text: "Trabajo terminado ✅"
+  expected_min: 1
+
+- text: "Familia 👨‍👩‍👧‍👦"
+  expected_min: 1
+
+- text: "Pulgar con tono 👍🏽"
+  expected_min: 1
+
+- text: "Corazón rojo ❤️"
+  expected_min: 1
+
+- text: "Estrella decorativa ✨"
+  expected_min: 1
+
+- text: "Shortcode :smile:"
+  expected: 0
+
+- text: "Emoticono :)"
+  expected: 0
+
+- text: "Corazón ascii <3"
+  expected: 0
+
+- text: "Hola mundo"
+  expected: 0
+
+- text: "Esto no tiene emojis."
+  expected: 0
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

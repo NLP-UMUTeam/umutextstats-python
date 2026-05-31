@@ -1,0 +1,55 @@
+cases:
+- text: "RT @pepe: esto es importante"
+  expected: 1
+  annotations:
+    tagged_pos: RT__(PROPN), @pepe__(PROPN), esto__(PRON), es__(AUX), importante__(ADJ)
+
+- text: "rt @ana mensaje"
+  expected: 1
+  annotations:
+    tagged_pos: rt__(PROPN), @ana__(PROPN), mensaje__(NOUN)
+
+- text: "Vía @pepe"
+  expected: 0
+  annotations:
+    tagged_pos: Vía__(NOUN), @pepe__(PROPN)
+
+- text: "via @pepe"
+  expected: 1
+  annotations:
+    tagged_pos: via__(X), @pepe__(PROPN)
+
+- text: "RT vía @pepe"
+  expected: 1
+  annotations:
+    tagged_pos: RT__(PROPN), vía__(NOUN), @pepe__(PROPN)
+
+- text: "rt via @pepe"
+  expected: 2
+  annotations:
+    tagged_pos: rt__(PROPN), via__(X), @pepe__(PROPN)
+
+- text: "Esto es parte de una palabra: arte"
+  expected: 0
+  annotations:
+    tagged_pos: Esto__(PRON), es__(AUX), parte__(NOUN), de__(ADP), una__(DET), palabra__(NOUN), arte__(NOUN)
+
+- text: "No cuentes virtual"
+  expected: 0
+  annotations:
+    tagged_pos: No__(ADV), cuentes__(VERB), virtual__(ADJ)
+
+- text: "Entre paréntesis (RT)"
+  expected: 1
+  annotations:
+    tagged_pos: Entre__(ADP), paréntesis__(NOUN), (__(PUNCT), RT__(PROPN), )__(PUNCT)
+
+- text: "RTRT no debería contar"
+  expected: 0
+  annotations:
+    tagged_pos: RTRT__(PROPN), no__(ADV), debería__(AUX), contar__(VERB)
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

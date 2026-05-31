@@ -14,8 +14,6 @@ dimensions:
       use_original_input: true
       percentage: false
       separator: whole
-      validation:
-        cases: tests/feature_cases/digital_addressivity_hashtags.yaml
 
     - key: digital-addressivity-mentions
       class: PatternDimension
@@ -24,8 +22,6 @@ dimensions:
       use_original_input: true
       percentage: false
       separator: by-word
-      validation:
-        cases: tests/feature_cases/digital_addressivity_mentions.yaml
 
     - key: digital-addressivity-mentions-medial
       class: PatternDimension
@@ -42,8 +38,6 @@ dimensions:
       use_original_input: true
       percentage: false
       separator: by-word
-      validation:
-        cases: tests/feature_cases/digital_addressivity_cashtags.yaml      
 
     - key: digital-addressivity-community-references
       class: PatternDimension
@@ -52,8 +46,6 @@ dimensions:
       use_original_input: true
       percentage: false
       separator: by-word
-      validation:
-        cases: tests/feature_cases/digital_community_references.yaml         
         
   - key: digital-linking
     description: Markers related to hyperlinking, external references, and networked navigation in digital texts
@@ -70,13 +62,6 @@ dimensions:
       class: PatternDimension
       description: Number of shortened URLs
       pattern: '(?i)\b(?:bit\.ly|t\.co|goo\.gl|tinyurl\.com)/\S+'
-      use_original_input: true
-      percentage: false
-
-    - key: digital-linking-invite-links
-      class: PatternDimension
-      description: Number of invitation links such as Discord or Telegram invites
-      pattern: '(?i)(discord(?:\.gg|\.com/invite)/\S+|t\.me/\S+)'
       use_original_input: true
       percentage: false
 
@@ -102,6 +87,21 @@ dimensions:
       percentage: false
       separator: by-word
 
+    - key: digital-paralinguistics-flags
+      class: PatternDimension
+      description: Number of Unicode flag emojis based on regional indicator symbols
+      pattern: '[\U0001F1E6-\U0001F1FF]{2}'
+      use_original_input: true
+      percentage: false
+      separator: by-word
+
+    - key: digital-paralinguistics-skin-tones
+      class: PatternDimension
+      description: Number of Unicode emoji skin tone modifiers
+      pattern: '[\U0001F3FB-\U0001F3FF]'
+      use_original_input: true
+      percentage: false
+      separator: by-word
 
   - key: digital-interaction-structure
     description: Structural markers associated with interaction flow, reposting, threading, and quoting in online discourse
@@ -118,7 +118,7 @@ dimensions:
     - key: digital-interaction-structure-thread-markers
       class: PatternDimension
       description: Number of thread or chained-post markers
-      pattern: '(?i)(\b\d+/\d+\b|\bhilo\b|\bthread\b)'
+      pattern: '(?i)(\b\d+/\d+\b|\b(?:abro|sigo|cierro)\s+hilo\b|\bhilo\s*\d+/\d+\b|\bthread\b)'
       use_original_input: true
       percentage: false
       separator: by-word
@@ -126,7 +126,7 @@ dimensions:
     - key: digital-interaction-structure-quote-markers
       class: PatternDimension
       description: Number of quoting markers in digital communication
-      pattern: '(?m)^(>+)'
+      pattern: '(?m)^\s*>+'
       use_original_input: true
       percentage: false
       separator: whole
@@ -139,6 +139,5 @@ dimensions:
     - key: digital-platform-language-jargon
       class: WordPerDictionary
       description: Number of internet and platform-related jargon expressions
-      dictionary: digital-platform-language-general
+      dictionary: digital-platform-language-jargon
       use_original_input: true
-      disabled_regexp: true

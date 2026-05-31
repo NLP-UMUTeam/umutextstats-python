@@ -1,0 +1,29 @@
+cases:
+- text: "Ese meme se hizo viral"
+  expected_min: 2
+
+- text: "Hay mucho spam y bots en la plataforma"
+  expected_min: 2
+
+- text: "El influencer publicó un clickbait"
+  expected_min: 2
+
+- text: "Lo vi en el timeline"
+  expected_min: 1
+
+- text: "Ese post tiene mucho engagement"
+  expected_min: 2
+
+- text: "Me hizo unfollow"
+  expected_min: 1
+
+- text: "Esto no contiene jerga digital"
+  expected: 0
+
+- text: "El botijo está en la mesa"
+  expected: 0
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

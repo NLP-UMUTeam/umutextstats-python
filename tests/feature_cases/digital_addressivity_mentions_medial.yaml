@@ -1,0 +1,50 @@
+cases:
+- text: "Gracias @pepe por avisar"
+  expected: 1
+  annotations:
+    tagged_pos: Gracias__(NOUN), @pepe__(PROPN), por__(ADP), avisar__(VERB)
+
+- text: "@pepe gracias por avisar"
+  expected: 0
+  annotations:
+    tagged_pos: \@pepe__(PROPN), gracias__(NOUN), por__(ADP), avisar__(VERB)
+
+- text: "@ana @luis seguimos"
+  expected: 1
+  annotations:
+    tagged_pos: \@ana__(PROPN), @luis__(PROPN), seguimos__(VERB)
+
+- text: "Hola @ana y @luis"
+  expected: 2
+  annotations:
+    tagged_pos: Hola__(INTJ), @ana__(PROPN), y__(CCONJ), @luis__(PROPN)
+
+- text: "Mención pegada hola@pepe"
+  expected: 0
+  annotations:
+    tagged_pos: Mención__(NOUN), pegada__(ADJ), hola@pepe__(X)
+
+- text: "Email pepe@example.com"
+  expected: 0
+  annotations:
+    tagged_pos: Email__(PROPN), pepe@example.com__(X)
+
+- text: "Paréntesis (@pepe)"
+  expected: 0
+  annotations:
+    tagged_pos: 'Paréntesis__(PROPN), (__(PUNCT), @pepe__(PROPN), )__(PUNCT)'
+
+- text: "Salto de línea\n@pepe responde"
+  expected: 1
+  annotations:
+    tagged_pos: Salto__(NOUN), de__(ADP), línea__(NOUN), @pepe__(PROPN), responde__(VERB)
+
+- text: "Solo arroba @"
+  expected: 0
+  annotations:
+    tagged_pos: Solo__(ADV), arroba__(NOUN), @__(PUNCT)
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

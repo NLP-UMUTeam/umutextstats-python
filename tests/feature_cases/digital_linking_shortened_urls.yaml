@@ -1,0 +1,60 @@
+cases:
+- text: "Mira https://bit.ly/abc123"
+  expected: 1
+  annotations:
+    tagged_pos: Mira__(VERB), https://bit.ly/abc123__(X)
+
+- text: "Mira bit.ly/abc123"
+  expected: 1
+  annotations:
+    tagged_pos: Mira__(VERB), bit.ly/abc123__(X)
+
+- text: "Enlace t.co/xyz"
+  expected: 1
+  annotations:
+    tagged_pos: Enlace__(NOUN), t.co/xyz__(X)
+
+- text: "Enlace goo.gl/abc"
+  expected: 1
+  annotations:
+    tagged_pos: Enlace__(NOUN), goo.gl/abc__(X)
+
+- text: "Enlace tinyurl.com/prueba"
+  expected: 1
+  annotations:
+    tagged_pos: Enlace__(NOUN), tinyurl.com/prueba__(X)
+
+- text: "bit.ly/a y t.co/b"
+  expected: 2
+  annotations:
+    tagged_pos: bit.ly/a__(X), y__(CCONJ), t.co/b__(X)
+
+- text: "URL normal https://um.es"
+  expected: 0
+  annotations:
+    tagged_pos: URL__(NOUN), normal__(ADJ), https://um.es__(X)
+
+- text: "Dominio parecido rabbit.ly/test"
+  expected: 0
+  annotations:
+    tagged_pos: Dominio__(NOUN), parecido__(ADJ), rabbit.ly/test__(X)
+
+- text: "Solo dominio bit.ly"
+  expected: 0
+  annotations:
+    tagged_pos: Solo__(ADV), dominio__(NOUN), bit.ly__(X)
+
+- text: "Con mayúsculas BIT.LY/ABC"
+  expected: 1
+  annotations:
+    tagged_pos: Con__(ADP), mayúsculas__(NOUN), BIT.LY/ABC__(X)
+
+- text: "Puntuación bit.ly/abc."
+  expected: 1
+  annotations:
+    tagged_pos: Puntuación__(NOUN), bit.ly/abc.__(X)
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

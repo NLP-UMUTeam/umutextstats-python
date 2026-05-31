@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import yaml
+import argparse
 
 from rich.console import Console
 from rich.table import Table
@@ -11,6 +12,39 @@ from umutextstats.dimensions.input_resolution import resolve_dimension_input
 from umutextstats.io.text import ensure_text
 from umutextstats.config.inspect import inspect_dimension_text
 from umutextstats.config.loader import load_config
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--only",
+        default=None,
+        help="Validate only dimensions whose key starts with this prefix.",
+    )
+    return parser.parse_args()
+
+
+def default_cases_path_for_key(key: str) -> Path:
+    filename = key.replace("-", "_") + ".yaml"
+    return Path("tests/feature_cases") / filename
+
+
+def iter_dimensions(dimensions, root: Path):
+    for dimension in dimensions:
+        validation = getattr(dimension, "validation", None) or {}
+
+        explicit_cases_path = validation.get("cases")
+        default_cases_path = default_cases_path_for_key(dimension.key)
+
+        if explicit_cases_path:
+            yield dimension, Path(explicit_cases_path), "explicit"
+        elif (root / default_cases_path).exists():
+            yield dimension, default_cases_path, "convention"
+        else:
+            yield dimension, default_cases_path, "missing"
+
+        yield from iter_dimensions(dimension.children, root)
+
 
 def build_case_row(case):
     text = ensure_text(case.get("text", ""))
@@ -22,18 +56,6 @@ def build_case_row(case):
         "text_norm": text,
         **annotations,
     }
-
-def iter_dimensions(dimensions):
-    for dimension in dimensions:
-        validation = getattr(dimension, "validation", None)
-
-        if validation:
-            cases_path = validation.get("cases")
-
-            if cases_path:
-                yield dimension, Path(cases_path)
-
-        yield from iter_dimensions(dimension.children)
 
 
 def dimension_requires_tagged_pos(dimension):
@@ -81,6 +103,9 @@ def print_stats_table(stats):
 
 
 def main():
+
+    args = parse_args()
+
     config = load_config()
     root = Path(__file__).parent.parent
 
@@ -88,8 +113,41 @@ def main():
     failures = []
     stats = []
 
-    for dimension, cases_path in iter_dimensions(config.dimensions):
+
+    for dimension, cases_path, source in iter_dimensions(config.dimensions, root):
+        if args.only and not dimension.key.startswith(args.only):
+            continue
+        
         full_cases_path = root / cases_path
+
+
+        if not full_cases_path.exists():
+            if source == "missing":
+                stats.append(
+                    {
+                        "dimension": dimension.key,
+                        "file": str(cases_path),
+                        "cases": 0,
+                        "passed": 0,
+                        "failed": 0,
+                    }
+                )
+                continue
+
+            failed += 1
+            failures.append(
+                f"{dimension.key}: cases file does not exist: {full_cases_path}"
+            )
+            stats.append(
+                {
+                    "dimension": dimension.key,
+                    "file": str(cases_path),
+                    "cases": 0,
+                    "passed": passed,
+                    "failed": failed,
+                }
+            )
+            continue
 
         passed = 0
         failed = 0

@@ -1,0 +1,65 @@
+cases:
+- text: "Visita https://um.es"
+  expected: 1
+  annotations:
+    tagged_pos: Visita__(VERB), https://um.es__(X)
+
+- text: "Visita http://um.es"
+  expected: 1
+  annotations:
+    tagged_pos: Visita__(VERB), http://um.es__(X)
+
+- text: "Más información en www.um.es"
+  expected: 1
+  annotations:
+    tagged_pos: Más__(ADV), información__(NOUN), en__(ADP), www.um.es__(X)
+
+- text: "https://um.es y https://openai.com"
+  expected: 2
+  annotations:
+    tagged_pos: https://um.es__(X), y__(CCONJ), https://openai.com__(X)
+
+- text: "www.um.es y www.openai.com"
+  expected: 2
+  annotations:
+    tagged_pos: www.um.es__(X), y__(CCONJ), www.openai.com__(X)
+
+- text: "URL con ruta https://um.es/grupo/proyecto"
+  expected: 1
+  annotations:
+    tagged_pos: URL__(NOUN), con__(ADP), ruta__(NOUN), https://um.es/grupo/proyecto__(X)
+
+- text: "URL con parámetros https://um.es?q=test"
+  expected: 1
+  annotations:
+    tagged_pos: URL__(NOUN), con__(ADP), parámetros__(NOUN), https://um.es?q=test__(X)
+
+- text: "Sin protocolo um.es"
+  expected: 0
+  annotations:
+    tagged_pos: Sin__(ADP), protocolo__(NOUN), um.es__(X)
+
+- text: "Correo pepe@um.es"
+  expected: 0
+  annotations:
+    tagged_pos: Correo__(NOUN), pepe@um.es__(X)
+
+- text: "Solo www"
+  expected: 0
+  annotations:
+    tagged_pos: Solo__(ADV), www__(X)
+
+- text: "Solo protocolo https://"
+  expected: 0
+  annotations:
+    tagged_pos: Solo__(ADV), protocolo__(NOUN), https://__(X)
+
+- text: "Puntuación https://um.es."
+  expected: 1
+  annotations:
+    tagged_pos: Puntuación__(NOUN), https://um.es__(X), .__(PUNCT)
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

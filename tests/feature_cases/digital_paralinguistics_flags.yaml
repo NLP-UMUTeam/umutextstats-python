@@ -1,0 +1,17 @@
+cases:
+- text: "Bandera 🇪🇸"
+  expected: 1
+
+- text: "Varias banderas 🇪🇸 🇫🇷 🇺🇸"
+  expected: 3
+
+- text: "Sin bandera 😂"
+  expected: 0
+
+- text: "Texto normal"
+  expected: 0
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

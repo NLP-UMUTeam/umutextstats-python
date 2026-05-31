@@ -1,0 +1,20 @@
+cases:
+- text: "Pulgar con tono 👍🏽"
+  expected: 1
+
+- text: "Varios tonos 👍🏻 👋🏾 ✊🏿"
+  expected: 3
+
+- text: "Emoji sin tono 👍"
+  expected: 0
+
+- text: "Cara sin tono 😂"
+  expected: 0
+
+- text: "Texto normal"
+  expected: 0
+
+- text: null
+  expected: 0
+  annotations:
+    tagged_pos: ''

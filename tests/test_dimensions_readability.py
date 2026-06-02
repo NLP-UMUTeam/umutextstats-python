@@ -2,12 +2,12 @@
 
 import pandas as pd
 
-from umutextstats.dimensions.readability import ReadbilityDimension
+from umutextstats.dimensions.readability import ReadabilityDimension
 
 
 def compute(texts):
     df = pd.DataFrame({"text_norm": texts})
-    dim = ReadbilityDimension(key="readability")
+    dim = ReadabilityDimension(key="readability")
     return list(dim.compute(df))
 
 

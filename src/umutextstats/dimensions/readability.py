@@ -6,7 +6,7 @@ from umutextstats.text.tokenization import get_lexical_tokens
 from umutextstats.text.patterns import SENTENCE_SPAN_REGEX
 
 
-class ReadbilityDimension(BaseDimension):
+class ReadabilityDimension(BaseDimension):
     def compute(self, df):
         return (
             df[self.input_column]

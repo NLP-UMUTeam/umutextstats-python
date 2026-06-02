@@ -6,18 +6,6 @@ dimensions:
     - key: stylometry-corpus-length
       class: LengthDimension
       description: Counts the length of the text
-    - key: stylometry-corpus-TTR
-      class: RTIEDimension
-      description: Standardized ratios TTR
-      separator: whole
-    - key: stylometry-corpus-TTR-standard
-      class: RTIEDimension
-      description: TTR (by chunks)
-      separator: by-chunks
-    - key: stylometry-corpus-TTR-deviation
-      class: RTIEDeviationDimension
-      description: TTR (by chunks)
-      separator: by-chunks
     - key: stylometry-corpus-words-count
       class: WordCountDimension
       description: Counts how many words there are in the text
@@ -30,6 +18,27 @@ dimensions:
     - key: stylometry-corpus-words-per-sentence
       class: WordPerSentenceDimension
       description: The average number of words per sentence
+
+    - key: stylometry-corpus-TTR
+      class: RTIEDimension
+      description: Standardized ratios TTR
+      separator: whole
+    - key: stylometry-corpus-TTR-standard
+      class: RTIEDimension
+      description: TTR (by chunks)
+      separator: by-chunks
+    - key: stylometry-corpus-TTR-deviation
+      class: RTIEDeviationDimension
+      description: TTR (by chunks)
+      separator: by-chunks
+
+    - key: stylometry-corpus-readability
+      class: ReadabilityDimension
+      description: Measures the readability within of the text
+    - key: stylometry-corpus-inflesz
+      class: PerspicuityDimension
+      description: Measures the perspicuity within of the text
+
     - key: stylometry-corpus-uppercase
       class: WordCase
       description: The average number of words written in uppercase
@@ -38,14 +47,7 @@ dimensions:
       class: WordCase
       description: The average number of words written in titlecase
       comparator: title
-    - key: stylometry-corpus-writing-style
-      children:
-      - key: stylometry-corpus-readability
-        class: ReadabilityDimension
-        description: Measures the readability within of the text
-      - key: stylometry-corpus-inflesz
-        class: PerspicuityDimension
-        description: Measures the perspicuity within of the text
+
     - key: stylometry-corpus-expressions-quoted
       class: PatternDimension
       description: Counts how many quoted expressions
@@ -62,6 +64,7 @@ dimensions:
       description: Counts how many expressions within asterisks
       pattern: '\*[\p{L}\p{N}\s\-\,\.]{4,64}\*'
       percentage: false
+
     - key: stylometry-corpus-words-length-avg
       class: AverageWordLengthDimension
       description: The average length of the words
@@ -70,131 +73,7 @@ dimensions:
       description: The number of words bigger than 6 characters
       comparator: '>='
       length: '6'
-    - key: stylometry-corpus-words-with-1ltr
-      class: WordLengthDimension
-      description: The number of words equal to 1 characters
-      length: '1'
-      comparator: '='
-    - key: stylometry-corpus-words-with-2ltr
-      class: WordLengthDimension
-      description: The number of words equal to 2 characters
-      length: '2'
-      comparator: '='
-    - key: stylometry-corpus-words-with-3ltr
-      class: WordLengthDimension
-      description: The number of words equal to 3 characters
-      comparator: '='
-      length: '3'
-    - key: stylometry-corpus-words-with-4ltr
-      class: WordLengthDimension
-      description: The number of word sequal to 4 characters
-      comparator: '='
-      length: '4'
-    - key: stylometry-corpus-words-with-5ltr
-      class: WordLengthDimension
-      description: The number of words equal to 5 characters
-      comparator: '='
-      length: '5'
-    - key: stylometry-corpus-words-with-6ltr
-      class: WordLengthDimension
-      description: The number of words equal to 6 characters
-      comparator: '='
-      length: '6'
-    - key: stylometry-corpus-words-with-7ltr
-      class: WordLengthDimension
-      description: The number of words equal to 7 characters
-      comparator: '='
-      length: '7'
-    - key: stylometry-corpus-words-with-8ltr
-      class: WordLengthDimension
-      description: The number of words equal to 8 characters
-      length: '8'
-      comparator: '='
-    - key: stylometry-corpus-words-with-9ltr
-      class: WordLengthDimension
-      description: The number of words equal to 9 characters
-      length: '9'
-      comparator: '='
-    - key: stylometry-corpus-words-with-10ltr
-      class: WordLengthDimension
-      description: The number of words equal to 10 characters
-      length: '10'
-      comparator: '='
-    - key: stylometry-corpus-words-with-11ltr
-      class: WordLengthDimension
-      description: The number of words equal to 11 characters
-      length: '11'
-      comparator: '='
-    - key: stylometry-corpus-words-with-12ltr
-      class: WordLengthDimension
-      description: The number of words equal to 12 characters
-      length: '12'
-      comparator: '='
-    - key: stylometry-corpus-words-with-13ltr
-      class: WordLengthDimension
-      description: The number of words equal to 13 characters
-      length: '13'
-      comparator: '='
-    - key: stylometry-corpus-words-with-14ltr
-      class: WordLengthDimension
-      description: The number of words equal to 14 characters
-      length: '14'
-      comparator: '='
-    - key: stylometry-corpus-words-with-15ltr
-      class: WordLengthDimension
-      description: The number of words equal to 15 characters
-      length: '15'
-      comparator: '='
-    - key: stylometry-corpus-words-with-16ltr
-      class: WordLengthDimension
-      description: The number of words equal to 16 characters
-      length: '16'
-      comparator: '='
-    - key: stylometry-corpus-words-with-17ltr
-      class: WordLengthDimension
-      description: The number of words equal to 17 characters
-      length: '17'
-      comparator: '='
-    - key: stylometry-corpus-words-with-18ltr
-      class: WordLengthDimension
-      description: The number of words equal to 18 characters
-      length: '18'
-      comparator: '='
-    - key: stylometry-corpus-words-with-19ltr
-      class: WordLengthDimension
-      description: The number of words equal to 19 characters
-      length: '19'
-      comparator: '='
-    - key: stylometry-corpus-words-with-20ltr
-      class: WordLengthDimension
-      description: The number of words equal to 20 characters
-      length: '20'
-      comparator: '='
-    - key: stylometry-corpus-words-with-21ltr
-      class: WordLengthDimension
-      description: The number of words equal to 21 characters
-      length: '21'
-      comparator: '='
-    - key: stylometry-corpus-words-with-22ltr
-      class: WordLengthDimension
-      description: The number of words equal to 22 characters
-      length: '22'
-      comparator: '='
-    - key: stylometry-corpus-words-with-23ltr
-      class: WordLengthDimension
-      description: The number of words equal to 23 characters
-      length: '23'
-      comparator: '='
-    - key: stylometry-corpus-words-with-24ltr
-      class: WordLengthDimension
-      description: The number of words equal to 24 characters
-      length: '24'
-      comparator: '='
-    - key: stylometry-corpus-words-with-25ltr
-      class: WordLengthDimension
-      description: The number of words equal to 25 characters
-      length: '25'
-      comparator: '='
+
   - key: stylometry-sentences
     children:
     - key: stylometry-sentences-count
@@ -230,6 +109,7 @@ dimensions:
       description: Counts how many sentences simulate a conversation
       pattern: '\-[\s\¿]*\p{L}+'
       separator: by-sentence
+
   - key: stylometry-punctuation
     children:
     - key: stylometry-punctuation-prime

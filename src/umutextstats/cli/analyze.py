@@ -25,8 +25,8 @@ def add_analyze_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "-t",
         "--text-column",
-        required=True,
-        help="Name of the column containing the input text",
+        default="text",
+        help="Name of the column containing the input text (default: text)",
     )
 
     parser.add_argument(

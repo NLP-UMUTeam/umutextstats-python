@@ -27,7 +27,7 @@ from umutextstats.dimensions.grammatical_gender import GrammaticalGenderDimensio
 from umutextstats.dimensions.language import LanguageDimension
 from umutextstats.dimensions.perspicuity import PerspicuityDimension
 from umutextstats.dimensions.pos_tagging_expression import POSTaggingExpression
-from umutextstats.dimensions.readability import ReadbilityDimension
+from umutextstats.dimensions.readability import ReadabilityDimension
 from umutextstats.dimensions.rtie import RTIEDimension, RTIEDeviationDimension
 from umutextstats.dimensions.sentence_per_dictionary import SentencePerDictionary
 from umutextstats.dimensions.syllable_per_word import SyllablePerWordDimension
@@ -72,7 +72,7 @@ DIMENSION_REGISTRY: dict[str, Type[BaseDimension]] = {
     "LanguageDimension": LanguageDimension,
     "PerspicuityDimension": PerspicuityDimension,
     "POSTaggingExpression": POSTaggingExpression,
-    "ReadbilityDimension": ReadbilityDimension,
+    "ReadabilityDimension": ReadabilityDimension,
     "RTIEDimension": RTIEDimension,
     "RTIEDeviationDimension": RTIEDeviationDimension,
     "SentencePerDictionary": SentencePerDictionary,

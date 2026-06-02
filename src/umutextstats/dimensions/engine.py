@@ -95,7 +95,7 @@ class DimensionEngine:
             data[key] = instance.compute(df)
 
     def _compute_composite_dimension(self, dimension, data, n_rows):
-        strategy = (dimension.strategy or "CompositeStrategySum").upper()
+        strategy = (dimension.strategy or "CompositeStrategyNone").upper()
 
         child_keys = [
             child.key
@@ -112,6 +112,9 @@ class DimensionEngine:
         })
 
         child_df = child_df.apply(pd.to_numeric, errors="coerce").fillna(0)
+
+        if strategy == "COMPOSITESTRATEGYNONE":
+            return [None] * n_rows
 
         if strategy == "COMPOSITESTRATEGYSUM":
             return child_df.sum(axis=1)

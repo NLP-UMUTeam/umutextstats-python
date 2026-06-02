@@ -10,17 +10,31 @@ class StdinInputResolver:
         return str(path) == "-"
 
     def read(self, path, text_column: str):
-        df = pd.read_csv(sys.stdin)
-        
-        if text_column not in df.columns:
-            raise ValueError(f"Text column '{text_column}' not found in CSV from stdin")
+        content = sys.stdin.read()
 
-        df = df.copy()
+        try:
+            from io import StringIO
 
-        df["text_raw"] = df[text_column].map(ensure_text)
-        df["text"] = df["text_raw"]
+            df = pd.read_csv(StringIO(content))
 
-        if "id" not in df.columns:
-            df.insert(0, "id", range(len(df)))
+            if text_column in df.columns:
+                df = df.copy()
 
-        return df
+                df["text_raw"] = df[text_column].map(ensure_text)
+                df["text"] = df["text_raw"]
+
+                if "id" not in df.columns:
+                    df.insert(0, "id", range(len(df)))
+
+                return df
+
+        except Exception:
+            pass
+
+        return pd.DataFrame(
+            {
+                "id": [0],
+                "text_raw": [ensure_text(content)],
+                "text": [ensure_text(content)],
+            }
+        )

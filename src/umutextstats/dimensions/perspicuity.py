@@ -1,10 +1,16 @@
-from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.syllable_count import count_syllables_text
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.scalar_inspectable_dimension import (
+    ScalarInspectableDimension,
+)
+from umutextstats.text.syllables import count_syllables_text
 from umutextstats.text.sentence import count_sentences
 from umutextstats.text.tokenization import get_lexical_tokens
 
 
-class PerspicuityDimension(BaseDimension):
+class PerspicuityDimension(ScalarInspectableDimension):
+    def compute_single(self, item: DimensionInput) -> float:
+        return self._compute_text(self.get_text(item))
+
     def compute(self, df):
         return (
             df[self.input_column]
@@ -25,4 +31,11 @@ class PerspicuityDimension(BaseDimension):
             206.835
             - (62.3 * (syllables_count / word_count))
             - (word_count / sentences_count)
+        )
+
+    def inspection_debug_text(self) -> str:
+        return (
+            "Formula: 206.835 - "
+            "62.3 * (syllables / words) - "
+            "(words / sentences)"
         )

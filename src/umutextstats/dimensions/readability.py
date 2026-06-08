@@ -1,12 +1,13 @@
-import regex as re
-
-from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.syllable_count import count_syllables_text
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.text.syllables import count_syllables_text
 from umutextstats.text.tokenization import get_lexical_tokens
 from umutextstats.text.patterns import SENTENCE_SPAN_REGEX
+from umutextstats.inspection.scalar_inspectable_dimension import (
+    ScalarInspectableDimension,
+)
 
 
-class ReadabilityDimension(BaseDimension):
+class ReadabilityDimension(ScalarInspectableDimension):
     def compute(self, df):
         return (
             df[self.input_column]
@@ -41,3 +42,20 @@ class ReadabilityDimension(BaseDimension):
             return 1
 
         return count
+    
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        return self._compute_text(
+            self.get_text(item)
+        )
+    
+    def inspection_debug_text(self) -> str:
+        return (
+            "Formula: "
+            "206.84 - "
+            "60 * (syllables / words) - "
+            "102 * (sentences / words)"
+        )

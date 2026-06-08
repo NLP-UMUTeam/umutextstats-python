@@ -1,5 +1,12 @@
-from umutextstats.text.patterns import POS_ITEM_REGEX
+from umutextstats.config.params import (
+    dictionary_param,
+    disabled_regexp_param,
+    param,
+    percentage_param,
+)
+from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
+from umutextstats.text.patterns import POS_ITEM_REGEX
 
 
 ALLOWED_POS = {
@@ -34,21 +41,52 @@ class GrammaticalGenderDimension(WordPerDictionary):
         )
         self.tagged_pos_column = tagged_pos_column
 
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "text_norm",
+    ):
+        return cls(
+            key=dimension.key,
+            dictionary_name=dictionary_param(dimension),
+            input_column=input_column,
+            tagged_pos_column=param(
+                dimension,
+                "tagged_pos_column",
+                "tagged_pos",
+            ),
+            percentage=percentage_param(dimension),
+            use_regex=not disabled_regexp_param(dimension),
+        )
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        tagged_pos = self._get_tagged_pos(item)
+
+        return self._compute_tagged_pos(tagged_pos)
+
     def compute(self, df):
         return df.apply(self._compute_row, axis=1)
 
     def _compute_row(self, row) -> float:
         tagged_pos = str(row.get(self.tagged_pos_column, "") or "")
 
-        filtered_words = self._get_words_filtered_by_pos(tagged_pos)
+        return self._compute_tagged_pos(tagged_pos)
 
+    def _compute_tagged_pos(
+        self,
+        tagged_pos: str,
+    ) -> float:
+        filtered_words = self._get_words_filtered_by_pos(tagged_pos)
         total_words = len(filtered_words)
 
         if total_words == 0:
             return 0.0
 
         filtered_text = " ".join(filtered_words)
-
         count = self._count_text(filtered_text)
 
         if not self.percentage:
@@ -56,22 +94,48 @@ class GrammaticalGenderDimension(WordPerDictionary):
 
         return (100 * count) / total_words
 
-    def _get_words_filtered_by_pos(self, tagged_text: str) -> list[str]:
+    def _get_words_filtered_by_pos(
+        self,
+        tagged_text: str,
+    ) -> list[str]:
         words = []
 
         if not tagged_text:
             return words
 
-        for raw_item in tagged_text.split(", "):
-            match = POS_ITEM_REGEX.fullmatch(raw_item.strip())
+        for sentence in tagged_text.split(" || "):
+            for raw_item in sentence.split(", "):
+                match = POS_ITEM_REGEX.fullmatch(raw_item.strip())
 
-            if not match:
-                continue
+                if not match:
+                    continue
 
-            word = match.group("word") or ""
-            tag = match.group("tag") or ""
+                word = match.group("word") or ""
+                tag = match.group("tag") or ""
 
-            if tag in ALLOWED_POS:
-                words.append(word.lower())
+                if tag in ALLOWED_POS:
+                    words.append(word.lower())
 
         return words
+
+    def _get_tagged_pos(
+        self,
+        item: DimensionInput,
+    ) -> str:
+        tagged_pos = item.get_annotation(self.tagged_pos_column)
+
+        if tagged_pos is not None:
+            return str(tagged_pos)
+
+        value = item.get(self.tagged_pos_column, "")
+
+        return "" if value is None else str(value)
+
+    def inspection_debug_text(self) -> str:
+        return (
+            f"Loaded dictionary: {self.dictionary_name}\n"
+            f"Allowed POS: {', '.join(sorted(ALLOWED_POS))}\n"
+            f"Tagged POS column: {self.tagged_pos_column}\n"
+            f"Use regex: {self.use_regex}\n"
+            f"Percentage: {self.percentage}"
+        )

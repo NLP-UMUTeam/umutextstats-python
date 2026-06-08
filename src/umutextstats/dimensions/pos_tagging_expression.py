@@ -1,5 +1,4 @@
-# src/umutextstats/dimensions/pos_tagging_expression.py
-
+from umutextstats.config.params import param, percentage_param
 from umutextstats.dimensions.pattern import PatternDimension
 
 
@@ -16,4 +15,17 @@ class POSTaggingExpression(PatternDimension):
             pattern=pattern,
             input_column=input_column,
             percentage=percentage,
+        )
+
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "tagged_pos",
+    ):
+        return cls(
+            key=dimension.key,
+            pattern=param(dimension, "pattern", ""),
+            input_column="tagged_pos",
+            percentage=percentage_param(dimension),
         )

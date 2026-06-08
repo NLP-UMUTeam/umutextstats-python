@@ -5,7 +5,7 @@ from __future__ import annotations
 import regex as re
 
 from umutextstats.cache import CacheManager
-from umutextstats.dimensions.syllable_count import count_syllables_text
+from umutextstats.text.syllables import count_syllables_text
 from umutextstats.text.sentence import count_sentences
 from umutextstats.text.tokenization import get_lexical_tokens
 

@@ -1,40 +1,20 @@
-# tests/test_dimensions_error_mispelling_accents.py
-
 import pandas as pd
 
-from umutextstats.dimensions.error_mispelling_accents import (
-    ErrorMispellingAccentsDimension,
-)
-
-
-class FakeSpellChecker:
-    def __init__(self):
-        self._known = {"hola", "mundo", "camión", "rápido"}
-        self._corrections = {
-            "camion": "camión",
-            "rapido": "rápido",
-            "holaa": "hola",
-        }
-
-    def available(self) -> bool:
-        return True
-
-    def is_known(self, word: str) -> bool:
-        return word in self._known
-
-    def correction(self, word: str) -> str | None:
-        return self._corrections.get(word)
-
-    # opcional: mantener compatibilidad con código antiguo
-    def __contains__(self, word):
-        return self.is_known(word)
+from umutextstats.dimensions.error import ErrorMispellingAccentsDimension
 
 
 def compute(texts):
-    df = pd.DataFrame({"text_norm": texts})
+    df = pd.DataFrame({"text": texts})
 
-    dim = ErrorMispellingAccentsDimension(key="accents")
-    dim.spellchecker = FakeSpellChecker()
+    dim = ErrorMispellingAccentsDimension(
+        key="accents",
+        input_column="text",
+    )
+
+    dim.accent_map = {
+        "camion": "camión",
+        "rapido": "rápido",
+    }
 
     return list(dim.compute(df))
 

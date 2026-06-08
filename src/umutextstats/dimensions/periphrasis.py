@@ -1,7 +1,15 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+
 import regex as re
 
+from umutextstats.config.params import param
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.iterable_inspectable_dimension import (
+    IterableInspectableDimension,
+)
 from umutextstats.text.patterns import POS_ITEM_REGEX
-from umutextstats.dimensions.base import BaseDimension
 from umutextstats.text.tokenization import get_lexical_tokens
 
 
@@ -13,7 +21,26 @@ VERB_FORM_BY_MODE = {
 }
 
 
-class PeriphrasisDimension(BaseDimension):
+@dataclass(frozen=True)
+class PeriphrasisMatch:
+    text: str
+    start_pos: int
+    end_pos: int
+
+    def group(self, index: int = 0) -> str:
+        if index != 0:
+            raise IndexError(index)
+
+        return self.text
+
+    def start(self) -> int:
+        return self.start_pos
+
+    def end(self) -> int:
+        return self.end_pos
+
+
+class PeriphrasisDimension(IterableInspectableDimension):
     def __init__(
         self,
         key: str,
@@ -25,6 +52,35 @@ class PeriphrasisDimension(BaseDimension):
         self.tagged_pos_column = tagged_pos_column
         self.auxiliar_verbs = self._parse_auxiliar_verbs(auxiliar_verbs)
 
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "text_norm",
+    ):
+        return cls(
+            key=dimension.key,
+            auxiliar_verbs=param(dimension, "auxiliar_verbs", ""),
+            input_column=input_column,
+            tagged_pos_column=param(
+                dimension,
+                "tagged_pos_column",
+                "tagged_pos",
+            ),
+        )
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> int:
+        text = self.get_text(item)
+        tagged_pos = self._get_tagged_pos(item)
+
+        return self._compute_text(
+            text=text,
+            tagged_pos=tagged_pos,
+        )
+
     def compute(self, df):
         return df.apply(self._compute_row, axis=1)
 
@@ -32,13 +88,64 @@ class PeriphrasisDimension(BaseDimension):
         text = str(row.get(self.input_column, "") or "")
         tagged_pos = str(row.get(self.tagged_pos_column, "") or "")
 
-        words = get_lexical_tokens (text)
+        return self._compute_text(
+            text=text,
+            tagged_pos=tagged_pos,
+        )
+
+    def _compute_text(
+        self,
+        text: str,
+        tagged_pos: str,
+    ) -> int:
+        return sum(
+            1
+            for _ in self._iter_periphrases(
+                text=text,
+                tagged_pos=tagged_pos,
+            )
+        )
+
+    def inspect(self, item: DimensionInput):
+        text = self.get_text(item)
+        tagged_pos = self._get_tagged_pos(item)
+
+        matches = [
+            self._to_inspect_match(match)
+            for match in self._iter_periphrases(
+                text=text,
+                tagged_pos=tagged_pos,
+            )
+        ]
+
+        from umutextstats.inspection.models import DimensionInspection
+
+        return DimensionInspection(
+            key=self.key,
+            class_name=self.__class__.__name__,
+            pattern=None,
+            dictionary=None,
+            matches=matches,
+            discarded_matches=[],
+            debug_text=self._build_debug_text(item),
+        )
+
+    def iter_matches(self, text: str):
+        # No se puede inspeccionar correctamente solo con text,
+        # porque esta dimensión necesita tagged_pos.
+        return []
+
+    def _iter_periphrases(
+        self,
+        text: str,
+        tagged_pos: str,
+    ):
+        words = get_lexical_tokens(text)
         tagged_words = self._parse_tagged_pos(tagged_pos)
 
         if not words or not tagged_words:
-            return 0
+            return
 
-        occurrences = 0
         index = 0
 
         while index < len(words):
@@ -52,9 +159,9 @@ class PeriphrasisDimension(BaseDimension):
 
                 if aux["linker_variants"]:
                     matched_linker = self._match_linker(
-                        words,
-                        next_index,
-                        aux["linker_variants"],
+                        words=words,
+                        start_index=next_index,
+                        linker_variants=aux["linker_variants"],
                     )
 
                     if matched_linker is None:
@@ -65,24 +172,44 @@ class PeriphrasisDimension(BaseDimension):
                 if next_index >= len(words):
                     continue
 
-                if next_index < len(tagged_words):
-                    if self._matches_verb_mode(tagged_words[next_index], aux["mode"]):
-                        occurrences += 1
-                        index = next_index
-                        matched = True
-                        break
+                if next_index >= len(tagged_words):
+                    continue
+
+                if not self._matches_verb_mode(
+                    tagged_words[next_index],
+                    aux["mode"],
+                ):
+                    continue
+
+                yield PeriphrasisMatch(
+                    text=" ".join(words[index: next_index + 1]),
+                    start_pos=index,
+                    end_pos=next_index + 1,
+                )
+
+                index = next_index
+                matched = True
+                break
 
             index += 1
 
-        return occurrences
+    def _get_tagged_pos(
+        self,
+        item: DimensionInput,
+    ) -> str:
+        tagged_pos = item.get_annotation(self.tagged_pos_column)
 
-    def _parse_auxiliar_verbs(self, raw: str) -> list[dict]:
-        """
-        Formato esperado:
-            estar(por|para|a punto de)+infinitive
-            tener(que)+infinitive
-            estar+gerund
-        """
+        if tagged_pos is not None:
+            return str(tagged_pos)
+
+        value = item.get(self.tagged_pos_column, "")
+
+        return "" if value is None else str(value)
+
+    def _parse_auxiliar_verbs(
+        self,
+        raw: str,
+    ) -> list[dict]:
         auxiliaries = []
 
         if not raw:
@@ -103,6 +230,7 @@ class PeriphrasisDimension(BaseDimension):
             linker_variants = []
 
             linker_match = re.search(r"\((.*?)\)", left)
+
             if linker_match:
                 linker_variants = [
                     linker.strip().lower().split()
@@ -146,29 +274,37 @@ class PeriphrasisDimension(BaseDimension):
 
         return None
 
-    def _parse_tagged_pos(self, tagged_text: str) -> list[dict[str, str]]:
+    def _parse_tagged_pos(
+        self,
+        tagged_text: str,
+    ) -> list[dict[str, str]]:
         if not tagged_text:
             return []
 
         items = []
 
-        for raw_item in tagged_text.split(", "):
-            match = POS_ITEM_REGEX.fullmatch(raw_item.strip())
+        for sentence in tagged_text.split(" || "):
+            for raw_item in sentence.split(", "):
+                match = POS_ITEM_REGEX.fullmatch(raw_item.strip())
 
-            if not match:
-                continue
+                if not match:
+                    continue
 
-            items.append(
-                {
-                    "word": match.group("word") or "",
-                    "tag": match.group("tag") or "",
-                    "feats": match.group("feats") or "",
-                }
-            )
+                items.append(
+                    {
+                        "word": match.group("word") or "",
+                        "tag": match.group("tag") or "",
+                        "feats": match.group("feats") or "",
+                    }
+                )
 
         return items
 
-    def _matches_verb_mode(self, item: dict[str, str], mode: str) -> bool:
+    def _matches_verb_mode(
+        self,
+        item: dict[str, str],
+        mode: str,
+    ) -> bool:
         if item["tag"] not in {"VERB", "AUX"}:
             return False
 
@@ -178,3 +314,9 @@ class PeriphrasisDimension(BaseDimension):
             return False
 
         return expected in item["feats"]
+
+    def inspection_debug_text(self) -> str:
+        return (
+            f"Auxiliary patterns: {len(self.auxiliar_verbs)}\n"
+            f"Tagged POS column: {self.tagged_pos_column}"
+        )

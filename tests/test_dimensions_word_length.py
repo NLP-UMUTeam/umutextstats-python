@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from umutextstats.dimensions.word_length import WordLengthDimension
+from umutextstats.dimensions.length import WordLengthDimension
 
 
 def compute(texts, length, comparator="=", percentage=True):

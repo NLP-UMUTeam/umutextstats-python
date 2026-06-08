@@ -497,7 +497,7 @@ dimensions:
             - key: morphosyntax-morphology-verbs-periphrasis-temporal-aspect-temporal-immediate-posteriority
               class: PeriphrasisDimension
               description: 'Percentage of verbal periphrasis based on a temporal aspect: immediate posteriority'
-              auxiliar_verbs: ir(a)+infinitive
+              auxiliar_verbs: ir(a)+infinitive,voy(a)+infinitive,vas(a)+infinitive,va(a)+infinitive,vamos(a)+infinitive,vais(a)+infinitive,van(a)+infinitive
             - key: morphosyntax-morphology-verbs-periphrasis-temporal-aspect-temporal-recent-posteriority
               class: PeriphrasisDimension
               description: 'Percentage of verbal periphrasis based on a temporal aspect: recent posteriority'

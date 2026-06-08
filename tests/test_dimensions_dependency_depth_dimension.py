@@ -1,8 +1,6 @@
 import pandas as pd
 
-from umutextstats.dimensions.dependency_depth import (
-    DependencyDepthDimension,
-)
+from umutextstats.dimensions.dependency import DependencyDepthDimension
 
 
 def compute(tagged_dep, mode="max"):

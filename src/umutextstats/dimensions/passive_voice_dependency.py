@@ -1,19 +1,59 @@
 from __future__ import annotations
 
-import regex as re
+from dataclasses import dataclass
 
-from umutextstats.dimensions.base import BaseDimension
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.iterable_inspectable_dimension import IterableInspectableDimension
 from umutextstats.text.patterns import DEPENDENCY_ITEM_REGEX
 
 
+@dataclass(frozen=True)
+class DependencyMatch:
+    text: str
+    start_pos: int
+    end_pos: int
 
-class PassiveVoiceDependencyDimension(BaseDimension):
+    def group(self, index: int = 0) -> str:
+        if index != 0:
+            raise IndexError(index)
+        return self.text
+
+    def start(self) -> int:
+        return self.start_pos
+
+    def end(self) -> int:
+        return self.end_pos
+    
+PASSIVE_DEPRELS = {
+    "aux:pass",
+    "nsubj:pass",
+    "expl:pass",
+}
+
+class PassiveVoiceDependencyDimension(IterableInspectableDimension):
     def __init__(
         self,
         key: str,
         input_column: str = "tagged_dep",
     ):
         super().__init__(key=key, input_column=input_column)
+
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "tagged_dep",
+    ):
+        return cls(
+            key=dimension.key,
+            input_column="tagged_dep",
+        )
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        return self._compute_text(self.get_text(item))
 
     def compute(self, df):
         return (
@@ -29,30 +69,29 @@ class PassiveVoiceDependencyDimension(BaseDimension):
         if not sentences:
             return 0.0
 
-        passive_sentences = 0
-
-        for sentence in sentences:
-            items = self._parse_sentence(sentence)
-
-            if self._has_passive_voice(items):
-                passive_sentences += 1
+        passive_sentences = sum(
+            1
+            for sentence in sentences
+            if self._has_passive_voice(
+                self._parse_sentence(sentence)
+            )
+        )
 
         return (100 * passive_sentences) / len(sentences)
 
-    def _has_passive_voice(self, items: list[dict]) -> bool:
-        for item in items:
-            deprel = item["deprel"]
+    def _has_passive_voice(
+        self,
+        items: list[dict],
+    ) -> bool:
+        return any(
+            item["deprel"] in PASSIVE_DEPRELS
+            for item in items
+        )
 
-            if (
-                deprel == "aux:pass"
-                or deprel == "nsubj:pass"
-                or deprel == "expl:pass"
-            ):
-                return True
-
-        return False
-
-    def _split_sentences(self, tagged_text: str) -> list[str]:
+    def _split_sentences(
+        self,
+        tagged_text: str,
+    ) -> list[str]:
         if not tagged_text:
             return []
 
@@ -62,7 +101,10 @@ class PassiveVoiceDependencyDimension(BaseDimension):
             if sentence.strip()
         ]
 
-    def _parse_sentence(self, sentence: str) -> list[dict]:
+    def _parse_sentence(
+        self,
+        sentence: str,
+    ) -> list[dict]:
         items = []
 
         for raw_item in sentence.split(", "):
@@ -79,3 +121,35 @@ class PassiveVoiceDependencyDimension(BaseDimension):
             )
 
         return items
+
+    def iter_matches(self, tagged_text: str):
+        tagged_text = "" if tagged_text is None else str(tagged_text)
+
+        search_start = 0
+
+        for sentence in self._split_sentences(tagged_text):
+            sentence_start = tagged_text.find(sentence, search_start)
+
+            if sentence_start == -1:
+                sentence_start = 0
+
+            search_start = sentence_start + len(sentence)
+
+            for match in DEPENDENCY_ITEM_REGEX.finditer(sentence):
+                word = match.group("word") or ""
+                deprel = match.group("deprel") or ""
+
+                if deprel not in PASSIVE_DEPRELS:
+                    continue
+
+                start = sentence_start + match.start()
+                end = sentence_start + match.end()
+
+                yield DependencyMatch(
+                    text=word,
+                    start_pos=start,
+                    end_pos=end,
+                )
+
+    def inspection_debug_text(self) -> str:
+        return "Passive dependency labels: aux:pass, nsubj:pass, expl:pass"

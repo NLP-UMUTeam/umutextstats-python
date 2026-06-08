@@ -1,14 +1,19 @@
 # src/umutextstats/dimensions/rtie.py
 
+from __future__ import annotations
+
 import statistics
-import regex as re
 
-from umutextstats.dimensions.base import BaseDimension
-from umutextstats.text.tokenization import get_lexical_tokens
+from umutextstats.config.params import param
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.scalar_inspectable_dimension import (
+    ScalarInspectableDimension,
+)
 from umutextstats.text.patterns import SENTENCE_SPAN_REGEX
+from umutextstats.text.tokenization import get_lexical_tokens
 
 
-class RTIEBaseDimension(BaseDimension):
+class RTIEBaseDimension(ScalarInspectableDimension):
     def __init__(
         self,
         key: str,
@@ -18,7 +23,34 @@ class RTIEBaseDimension(BaseDimension):
     ):
         super().__init__(key=key, input_column=input_column)
         self.separator = separator or "by-chunks"
-        self.chunk_size = chunk_size
+        self.chunk_size = int(chunk_size or 1000)
+
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "text_norm",
+    ):
+        return cls(
+            key=dimension.key,
+            input_column=input_column,
+            separator=param(dimension, "separator", "by-chunks"),
+            chunk_size=int(param(dimension, "chunk_size", 1000) or 1000),
+        )
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        return self._compute_text(self.get_text(item))
+
+    def compute(self, df):
+        return (
+            df[self.input_column]
+            .fillna("")
+            .astype(str)
+            .apply(self._compute_text)
+        )
 
     def _ratios(self, text: str) -> list[float]:
         if self.separator == "whole":
@@ -31,7 +63,11 @@ class RTIEBaseDimension(BaseDimension):
 
     def _ttr_whole(self, text: str) -> float:
         words = self._words(text)
-        return len(set(words)) / len(words) if words else 0.0
+
+        if not words:
+            return 0.0
+
+        return len(set(words)) / len(words)
 
     def _ttr_by_chunks(self, text: str) -> list[float]:
         words = self._words(text)
@@ -43,6 +79,7 @@ class RTIEBaseDimension(BaseDimension):
 
         for start in range(0, len(words), self.chunk_size):
             chunk = words[start:start + self.chunk_size]
+
             if chunk:
                 ratios.append(len(set(chunk)) / len(chunk))
 
@@ -53,12 +90,16 @@ class RTIEBaseDimension(BaseDimension):
 
         for sentence in self._sentences(text):
             words = self._words(sentence)
-            ratios.append(len(set(words)) / len(words) if words else 0.0)
+
+            if words:
+                ratios.append(len(set(words)) / len(words))
+            else:
+                ratios.append(0.0)
 
         return ratios
 
     def _words(self, text: str) -> list[str]:
-        return get_lexical_tokens (text)
+        return get_lexical_tokens(text)
 
     def _sentences(self, text: str) -> list[str]:
         return [
@@ -67,30 +108,24 @@ class RTIEBaseDimension(BaseDimension):
             if match.group(0).strip()
         ]
 
-
-class RTIEDimension(RTIEBaseDimension):
-    def compute(self, df):
+    def inspection_debug_text(self) -> str:
         return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
+            f"Separator: {self.separator}\n"
+            f"Chunk size: {self.chunk_size}"
         )
 
+
+class RTIEDimension(RTIEBaseDimension):
     def _compute_text(self, text: str) -> float:
         ratios = self._ratios(text)
-        return sum(ratios) / len(ratios) if ratios else 0.0
+
+        if not ratios:
+            return 0.0
+
+        return sum(ratios) / len(ratios)
 
 
 class RTIEDeviationDimension(RTIEBaseDimension):
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
-
     def _compute_text(self, text: str) -> float:
         ratios = self._ratios(text)
 

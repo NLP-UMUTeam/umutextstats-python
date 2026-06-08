@@ -63,3 +63,4 @@ dimensions:
       class: WordPerDictionary
       description: Percentage of redundant expressions
       dictionary: redundant-expressions
+      percentage: false

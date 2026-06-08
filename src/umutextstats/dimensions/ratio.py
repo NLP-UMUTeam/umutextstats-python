@@ -1,111 +1,138 @@
-# tests/test_ratio_dimension.py
+from __future__ import annotations
 
 import pandas as pd
 
-from umutextstats.dimensions.ratio import RatioDimension
+from umutextstats.config.params import param, split_param_list
+from umutextstats.dimensions.base import BaseDimension
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.models import DimensionInspection
 
 
-def test_ratio_dimension_basic_ratio():
-    data = {
-        "nouns": pd.Series([2, 4, 0]),
-        "verbs": pd.Series([1, 2, 0]),
-    }
+class RatioDimension(BaseDimension):
+    def __init__(
+        self,
+        key: str,
+        numerator: list[str] | str,
+        denominator: list[str] | str,
+        input_column: str = "text_norm",
+        scale: float = 1.0,
+        zero_division: float = 0.0,
+    ):
+        super().__init__(key=key, input_column=input_column)
+        self.numerator = self._as_list(numerator)
+        self.denominator = self._as_list(denominator)
+        self.scale = float(scale)
+        self.zero_division = float(zero_division)
 
-    dimension = RatioDimension(
-        key="noun-to-verb",
-        numerator=["nouns"],
-        denominator=["verbs"],
-    )
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "text_norm",
+    ):
+        return cls(
+            key=dimension.key,
+            numerator=split_param_list(param(dimension, "numerator", "")),
+            denominator=split_param_list(param(dimension, "denominator", "")),
+            input_column=input_column,
+            scale=float(param(dimension, "scale") or 1.0),
+            zero_division=float(param(dimension, "zero_division") or 0.0),
+        )
 
-    result = dimension.compute_from_data(data, n_rows=3)
+    def compute(self, df):
+        return self.compute_from_data(
+            data={column: df[column] for column in df.columns},
+            n_rows=len(df),
+        )
 
-    assert list(result) == [2.0, 2.0, 0.0]
+    def compute_single(self, item: DimensionInput) -> float:
+        numerator = self._sum_item_keys(item, self.numerator)
+        denominator = self._sum_item_keys(item, self.denominator)
 
+        if denominator == 0:
+            return self.zero_division
 
-def test_ratio_dimension_sums_multiple_numerators_and_denominators():
-    data = {
-        "nouns": pd.Series([2, 4]),
-        "adjectives": pd.Series([3, 1]),
-        "verbs": pd.Series([1, 2]),
-        "adverbs": pd.Series([1, 2]),
-    }
+        return (numerator / denominator) * self.scale
 
-    dimension = RatioDimension(
-        key="nominal-to-verbal",
-        numerator=["nouns", "adjectives"],
-        denominator=["verbs", "adverbs"],
-    )
+    def inspect(self, item: DimensionInput) -> DimensionInspection:
+        value = self.compute_single(item)
 
-    result = dimension.compute_from_data(data, n_rows=2)
+        return DimensionInspection(
+            key=self.key,
+            class_name=self.__class__.__name__,
+            pattern=None,
+            dictionary=None,
+            matches=[],
+            discarded_matches=[],
+            debug_text=(
+                f"Value: {value}\n"
+                f"Numerator: {' + '.join(self.numerator) or '0'}\n"
+                f"Denominator: {' + '.join(self.denominator) or '0'}\n"
+                f"Scale: {self.scale}\n"
+                f"Zero division: {self.zero_division}"
+            ),
+        )
 
-    assert list(result) == [2.5, 1.25]
+    def compute_from_data(
+        self,
+        data: dict[str, pd.Series],
+        n_rows: int,
+    ) -> pd.Series:
+        numerator = self._sum_data_keys(data, self.numerator, n_rows)
+        denominator = self._sum_data_keys(data, self.denominator, n_rows)
 
+        result = numerator / denominator.replace(0, pd.NA)
 
-def test_ratio_dimension_applies_scale():
-    data = {
-        "a": pd.Series([1, 2]),
-        "b": pd.Series([2, 4]),
-    }
+        result = (
+            pd.to_numeric(result, errors="coerce")
+            .fillna(self.zero_division)
+        )
 
-    dimension = RatioDimension(
-        key="scaled-ratio",
-        numerator=["a"],
-        denominator=["b"],
-        scale=100.0,
-    )
+        return result * self.scale
 
-    result = dimension.compute_from_data(data, n_rows=2)
+    def _sum_data_keys(
+        self,
+        data: dict[str, pd.Series],
+        keys: list[str],
+        n_rows: int,
+    ) -> pd.Series:
+        if not keys:
+            return pd.Series([0.0] * n_rows)
 
-    assert list(result) == [50.0, 50.0]
+        frame = pd.DataFrame(
+            {
+                key: data.get(key, pd.Series([0.0] * n_rows))
+                for key in keys
+            }
+        )
 
+        return (
+            frame
+            .apply(pd.to_numeric, errors="coerce")
+            .fillna(0)
+            .sum(axis=1)
+        )
 
-def test_ratio_dimension_uses_zero_division_value():
-    data = {
-        "a": pd.Series([1, 2]),
-        "b": pd.Series([0, 0]),
-    }
+    def _sum_item_keys(
+        self,
+        item: DimensionInput,
+        keys: list[str],
+    ) -> float:
+        total = 0.0
 
-    dimension = RatioDimension(
-        key="safe-ratio",
-        numerator=["a"],
-        denominator=["b"],
-        zero_division=-1.0,
-    )
+        for key in keys:
+            try:
+                total += float(item.get(key, 0) or 0)
+            except (TypeError, ValueError):
+                continue
 
-    result = dimension.compute_from_data(data, n_rows=2)
+        return total
 
-    assert list(result) == [-1.0, -1.0]
+    def _as_list(
+        self,
+        value: list[str] | str,
+    ) -> list[str]:
+        if isinstance(value, list):
+            return value
 
-
-def test_ratio_dimension_missing_keys_are_treated_as_zero():
-    data = {
-        "a": pd.Series([1, 2]),
-        "b": pd.Series([1, 2]),
-    }
-
-    dimension = RatioDimension(
-        key="missing-ratio",
-        numerator=["a", "missing_num"],
-        denominator=["b", "missing_den"],
-    )
-
-    result = dimension.compute_from_data(data, n_rows=2)
-
-    assert list(result) == [1.0, 1.0]
-
-
-def test_ratio_dimension_no_denominator_returns_zero_division():
-    data = {
-        "a": pd.Series([1, 2]),
-    }
-
-    dimension = RatioDimension(
-        key="no-denominator",
-        numerator=["a"],
-        denominator=[],
-        zero_division=0.0,
-    )
-
-    result = dimension.compute_from_data(data, n_rows=2)
-
-    assert list(result) == [0.0, 0.0]
+        return split_param_list(value)

@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Any
+
+from umutextstats.dimensions.dimension_input import DimensionInput
 
 
 class BaseDimension(ABC):
@@ -9,3 +12,14 @@ class BaseDimension(ABC):
     @abstractmethod
     def compute(self, df):
         pass
+
+    def compute_single(self, item: DimensionInput) -> Any:
+        raise NotImplementedError(
+            f"{self.__class__.__name__}.compute_single() is not implemented"
+        )
+
+    def inspect(self, item: DimensionInput):
+        return None
+
+    def get_text(self, item: DimensionInput) -> str:
+        return item.get_text(self.input_column)

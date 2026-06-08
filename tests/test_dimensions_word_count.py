@@ -1,6 +1,6 @@
 import pandas as pd
 
-from umutextstats.dimensions.word_count import WordCountDimension
+from umutextstats.dimensions.count import WordCountDimension
 
 
 def compute(texts):

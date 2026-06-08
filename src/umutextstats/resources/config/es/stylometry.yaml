@@ -113,133 +113,133 @@ dimensions:
   - key: stylometry-punctuation
     children:
     - key: stylometry-punctuation-prime
-      class: CharacterCountDimension
-      description: Number of prime symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of prime symbols
       character: '′‴″'
     - key: stylometry-punctuation-currencies
-      class: CharacterCountDimension
-      description: Number of symbols used as currency symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of symbols used as currency symbols
       character: '€$£'
     - key: stylometry-punctuation-apostrophe
-      class: CharacterCountDimension
-      description: Apostrohpes, can be used to measure units or in Elision of words
+      class: CharacterFrequencyDimension
+      description: Percentage of apostrohpes, can be used to measure units or in Elision of words
       character: '’'''
     - key: stylometry-punctuation-brackets-open
-      class: CharacterCountDimension
-      description: Number of open curly brackets
+      class: CharacterFrequencyDimension
+      description: Percentage of open curly brackets
       character: '{[(〔'
     - key: stylometry-punctuation-curly-brackets-close
-      class: CharacterCountDimension
-      description: Number of closed curly brackets
+      class: CharacterFrequencyDimension
+      description: Percentage of closed curly brackets
       character: '}])〕'
     - key: stylometry-punctuation-quotation-open
-      class: CharacterCountDimension
-      description: Number of quotation open symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of quotation open symbols
       character: '"“‘''''«'
     - key: stylometry-punctuation-quotation-close
-      class: CharacterCountDimension
-      description: Number of quotation close symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of quotation close symbols
       character: '”"’''»'
     - key: stylometry-punctuation-colons
-      class: CharacterCountDimension
-      description: Number of colons
+      class: CharacterFrequencyDimension
+      description: Percentage of colons
       character: ':ː：∶'
       removeemojis: 'true'
     - key: stylometry-punctuation-semicolons
-      class: CharacterCountDimension
-      description: Number of semicolons
+      class: CharacterFrequencyDimension
+      description: Percentage of semicolons
       character: ';'
     - key: stylometry-punctuation-dashes
-      class: CharacterCountDimension
-      description: Number of dash symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of dash symbols
       character: '-—–'
     - key: stylometry-punctuation-low-dashes
-      class: CharacterCountDimension
-      description: Number of low dashed
+      class: CharacterFrequencyDimension
+      description: Percentage of low dashed
       character: '_'
     - key: stylometry-punctuation-fullstop
-      class: CharacterCountDimension
-      description: Number of fullstops
+      class: CharacterFrequencyDimension
+      description: Percentage of fullstops
       character: '.'
     - key: stylometry-punctuation-commas
-      class: CharacterCountDimension
-      description: Number of commas
+      class: CharacterFrequencyDimension
+      description: Percentage of commas
       character: ',ʻ،、︐︑﹐﹑，､'
     - key: stylometry-punctuation-ellipsis
       class: PatternDimension
-      description: Number of ellipsis
+      description: Percentage of ellipsis
       pattern: '…|\.{3,}'
       use_original_input: true
       separator: by-spaces
     - key: stylometry-punctuation-open-question
-      class: CharacterCountDimension
-      description: Number of open question symbol
+      class: CharacterFrequencyDimension
+      description: Percentage of open question symbol
       character: '¿'
     - key: stylometry-punctuation-open-exclamation
-      class: CharacterCountDimension
-      description: Number of open exclamation symbol
+      class: CharacterFrequencyDimension
+      description: Percentage of open exclamation symbol
       character: '¡'
     - key: stylometry-punctuation-space
-      class: CharacterCountDimension
-      description: Number of spaces
-      character: '\s'
+      class: CharacterFrequencyDimension
+      description: Percentage of spaces
+      character: SPACE
     - key: stylometry-punctuation-interdot
-      class: CharacterCountDimension
-      description: Number of interdots
+      class: CharacterFrequencyDimension
+      description: Percentage of interdots
       character: '·'
     - key: stylometry-punctuation-percentages
-      class: CharacterCountDimension
-      description: Number of percentages
+      class: CharacterFrequencyDimension
+      description: Percentage of percentages
       character: '%‰‱'
     - key: stylometry-punctuation-ampersand
-      class: CharacterCountDimension
-      description: Number of ampersands
+      class: CharacterFrequencyDimension
+      description: Percentage of ampersands
       character: '&'
     - key: stylometry-punctuation-at-sign
-      class: CharacterCountDimension
-      description: Number of at sign symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of at sign symbols
       character: '@'
     - key: stylometry-punctuation-backslash
-      class: CharacterCountDimension
-      description: Number of backslash symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of backslash symbols
       character: '\'
     - key: stylometry-punctuation-pipe
-      class: CharacterCountDimension
-      description: Number of pipe symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of pipe symbols
       character: '|¦'
     - key: stylometry-punctuation-bullet
-      class: CharacterCountDimension
-      description: Number of bullet symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of bullet symbols
       character: '•'
     - key: stylometry-punctuation-caret
-      class: CharacterCountDimension
-      description: Number of caret symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of caret symbols
       character: '^^‸⁁＾'
     - key: stylometry-punctuation-degree
-      class: CharacterCountDimension
-      description: Number of degree symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of degree symbols
       character: 'º'
     - key: stylometry-punctuation-ditto-mark
-      class: CharacterCountDimension
-      description: Number of ditto marks, that expresses that the words or figures above it are to be repeated
+      class: CharacterFrequencyDimension
+      description: Percentage of ditto marks, that expresses that the words or figures above it are to be repeated
       character: '”'
     - key: stylometry-punctuation-hash
-      class: CharacterCountDimension
-      description: Number of hash symbols
+      class: CharacterFrequencyDimension
+      description: Percentage of hash symbols
       character: '#'
     - key: stylometry-punctuation-numero-sign
       class: PatternDimension
-      description: Number of numero signs
+      description: Percentage of numero signs
       pattern: '(№|Nº|No,|No\.|no.)'
     - key: stylometry-punctuation-pilcrow
-      class: CharacterCountDimension
-      description: Number of pilcrow symbol, that are typographical characters that mark the star of a paragraph
+      class: CharacterFrequencyDimension
+      description: Percentage of pilcrow symbol, that are typographical characters that mark the star of a paragraph
       character: '¶'
     - key: stylometry-punctuation-trademarks
-      class: CharacterCountDimension
-      description: Number of copyright or trademark signs
+      class: CharacterFrequencyDimension
+      description: Percentage of copyright or trademark signs
       character: '©®™'
     - key: stylometry-punctuation-mathematical-signs
-      class: CharacterCountDimension
-      description: Number of mathematical signs
+      class: CharacterFrequencyDimension
+      description: Percentage of mathematical signs
       character: '−-≠+×*·+÷=≈~'

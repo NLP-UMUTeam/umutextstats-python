@@ -4,12 +4,12 @@ from umutextstats.config.models import DimensionConfig, UMUTextStatsConfig
 from umutextstats.dimensions import DimensionEngine
 
 
-def test_dimension_engine_builds_character_count_dimension_from_character_param():
+def test_dimension_engine_builds_character_frequency_dimension_from_character_param():
     config = UMUTextStatsConfig(
         dimensions=[
             DimensionConfig(
                 key="commas",
-                class_name="CharacterCountDimension",
+                class_name="CharacterFrequencyDimension",
                 params={"character": ","},
             )
         ]
@@ -76,12 +76,12 @@ def test_dimension_engine_composite_sum_dimension():
                 children=[
                     DimensionConfig(
                         key="commas",
-                        class_name="CharacterCountDimension",
+                        class_name="CharacterFrequencyDimension",
                         params={"character": ","},
                     ),
                     DimensionConfig(
                         key="dots",
-                        class_name="CharacterCountDimension",
+                        class_name="CharacterFrequencyDimension",
                         params={"character": "."},
                     ),
                 ],

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from umutextstats.dimensions.dependency_distance import DependencyDistanceDimension
+from umutextstats.dimensions.dependency import DependencyDistanceDimension
 
 
 def compute(tagged_dep, mode="mean"):

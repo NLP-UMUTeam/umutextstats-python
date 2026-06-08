@@ -1,6 +1,6 @@
 import pandas as pd
 
-from umutextstats.dimensions.dependency_tag import DependencyTag
+from umutextstats.dimensions.dependency import DependencyTag
 
 
 def compute(tagged_dep, deprel=None):

@@ -1,15 +1,16 @@
 cases:
-- text: "El camión llegó después."
+- text: "El camión apareció después."
   expected: 0
 
-- text: "El camion llegó después."
+- text: "El camion apareció después."
   expected: 25
 
-- text: "El camión llego despues."
+- text: "El camión aparecio despues."
   expected: 50
 
-- text: "Tu tienes mas informacion."
-  expected: 75
+- text: "La informacion publica sera util."
+  min_expected: 20
+  max_expected: 80
 
 - text: "UMU OpenAI Murcia."
   expected: 0

@@ -2,12 +2,12 @@
 
 import pandas as pd
 
-from umutextstats.dimensions.character_count import CharacterCountDimension
+from umutextstats.dimensions.count import CharacterFrequencyDimension
 
 
 def compute(texts, chars):
     df = pd.DataFrame({"text_norm": texts})
-    dim = CharacterCountDimension(key="chars", chars=chars)
+    dim = CharacterFrequencyDimension(key="chars", chars=chars)
     return list(dim.compute(df))
 
 

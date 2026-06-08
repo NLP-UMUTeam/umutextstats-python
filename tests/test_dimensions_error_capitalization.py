@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from umutextstats.dimensions.error_capitalization import (
+from umutextstats.dimensions.error import (
     ErrorCapitalizationStartingWithLowerCaseDimension,
 )
 

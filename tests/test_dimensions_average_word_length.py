@@ -1,6 +1,6 @@
 import pandas as pd
 
-from umutextstats.dimensions.average_word_length import AverageWordLengthDimension
+from umutextstats.dimensions.length import AverageWordLengthDimension
 
 
 def compute(texts):

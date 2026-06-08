@@ -1,18 +1,18 @@
 cases:
 - text: "1 vez fuimos allí."
-  expected: 1
+  expected: 100
 
 - text: "Primero fuimos allí."
   expected: 0
 
 - text: "1 vez fuimos allí. 2 veces volvimos."
-  expected: 2
+  expected: 100
 
 - text: "En 2024 viajamos."
   expected: 0
 
 - text: "¿3 personas vinieron?"
-  expected: 1
+  expected: 100
 
 - text: null
   expected: 0

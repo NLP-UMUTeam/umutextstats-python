@@ -1,16 +1,27 @@
+from __future__ import annotations
+
 from collections import Counter
 
 import numpy as np
 import pandas as pd
 import regex as re
 
+from umutextstats.config.params import (
+    dictionary_param,
+    disabled_regexp_param,
+    param,
+    percentage_param,
+)
 from umutextstats.dictionaries import DictionaryLoader
-from umutextstats.dimensions.base import BaseDimension
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.iterable_inspectable_dimension import (
+    IterableInspectableDimension,
+)
 from umutextstats.text.patterns import LEXICAL_TOKEN_REGEX, POS_ITEM_REGEX
 from umutextstats.text.tokenization import get_lexical_tokens
 
 
-class WordPerDictionary(BaseDimension):
+class WordPerDictionary(IterableInspectableDimension):
     def __init__(
         self,
         key: str,
@@ -25,6 +36,7 @@ class WordPerDictionary(BaseDimension):
         super().__init__(key=key, input_column=input_column)
 
         self.dictionary_name = dictionary_name
+        self.dictionary = dictionary_name
         self.percentage = percentage
         self.use_regex = use_regex
         self.pos_input_column = pos_input_column
@@ -49,7 +61,6 @@ class WordPerDictionary(BaseDimension):
             entries.extend(dictionary_entries.words)
             exceptions.extend(dictionary_entries.exceptions)
 
-
         self.entries = entries
         self.exceptions = exceptions
 
@@ -65,7 +76,30 @@ class WordPerDictionary(BaseDimension):
             self.patterns = None
             self.exception_patterns = None
             self.words = {word.lower() for word in self.entries}
-            self.exception_words = {word.lower() for word in self.exceptions}
+            self.exception_words = {
+                word.lower()
+                for word in self.exceptions
+            }
+
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "text_norm",
+    ):
+        return cls(
+            key=dimension.key,
+            dictionary_name=dictionary_param(dimension),
+            input_column=input_column,
+            percentage=percentage_param(dimension),
+            use_regex=not disabled_regexp_param(dimension),
+            pos_tag=param(dimension, "pos_tag", None),
+            pos_input_column=param(
+                dimension,
+                "pos_input_column",
+                "tagged_pos",
+            ),
+        )
 
     def _compile_patterns(self, entries: list[str], kind: str):
         patterns = []
@@ -85,31 +119,27 @@ class WordPerDictionary(BaseDimension):
 
         return patterns
 
-    def _count_regex_patterns(self, text: str, patterns) -> int:
-        return sum(len(pattern.findall(text)) for pattern in patterns)
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        text = self.get_text(item)
 
-    def _count_plain_words(self, text: str, words: set[str]) -> int:
-        source_words = get_lexical_tokens(text)
-        return sum(1 for word in source_words if word.lower() in words)
-
-    def _count_text(self, text: str) -> int:
-        if not text:
-            return 0
-
-        if self.use_regex:
-            positive_count = self._count_regex_patterns(text, self.patterns)
-            exception_count = self._count_regex_patterns(
-                text,
-                self.exception_patterns,
-            )
+        if self.pos_tag:
+            tagged_pos = self._get_tagged_pos(item)
+            count = self._count_text_with_pos(text, tagged_pos)
         else:
-            positive_count = self._count_plain_words(text, self.words)
-            exception_count = self._count_plain_words(
-                text,
-                self.exception_words,
-            )
+            count = self._count_text(text)
 
-        return max(positive_count - exception_count, 0)
+        if not self.percentage:
+            return count
+
+        word_total = self._get_word_total(item, text)
+
+        if word_total == 0:
+            return 0.0
+
+        return (100.0 * count) / word_total
 
     def compute(self, df):
         texts = df[self.input_column].fillna("").astype(str)
@@ -130,11 +160,12 @@ class WordPerDictionary(BaseDimension):
         if "word_count" in df.columns:
             word_totals = df["word_count"]
         else:
-            word_totals = texts.apply(lambda text: len(get_lexical_tokens(text)))
+            word_totals = texts.apply(
+                lambda text: len(get_lexical_tokens(text))
+            )
 
         counts_array = counts.to_numpy(dtype=float)
         word_totals_array = word_totals.to_numpy(dtype=float)
-
         percentages = np.zeros_like(counts_array, dtype=float)
 
         np.divide(
@@ -146,20 +177,172 @@ class WordPerDictionary(BaseDimension):
 
         return pd.Series(percentages, index=counts.index)
 
-    def _count_text_with_pos(self, text: str, tagged_pos: str) -> int:
+    def iter_matches(self, text: str):
+        yield from self.iter_positive_matches(text)
+
+    def iter_discarded_matches(self, text: str):
+        yield from self.iter_exception_matches(text)
+
+    def inspect(self, item: DimensionInput):
+        text = self.get_text(item)
+
+        if self.pos_tag:
+            tagged_pos = self._get_tagged_pos(item)
+            matches_iter = self.iter_positive_matches_with_pos(
+                text,
+                tagged_pos,
+            )
+            discarded_iter = self.iter_exception_matches_with_pos(
+                text,
+                tagged_pos,
+            )
+        else:
+            matches_iter = self.iter_positive_matches(text)
+            discarded_iter = self.iter_exception_matches(text)
+
+        matches = [
+            self._to_inspect_match(match)
+            for match in matches_iter
+        ]
+
+        discarded_matches = [
+            self._to_inspect_match(match)
+            for match in discarded_iter
+        ]
+
+        return self._build_inspection(
+            matches=matches,
+            discarded_matches=discarded_matches,
+        )
+
+    def _build_inspection(
+        self,
+        matches,
+        discarded_matches,
+    ):
+        from umutextstats.inspection.models import DimensionInspection
+
+        return DimensionInspection(
+            key=self.key,
+            class_name=self.__class__.__name__,
+            pattern=None,
+            dictionary=self.dictionary_name,
+            matches=matches,
+            discarded_matches=discarded_matches,
+            debug_text=self.inspection_debug_text(),
+        )
+
+    def inspection_debug_text(self) -> str:
+        parts = [
+            f"Loaded dictionary: {self.dictionary_name}",
+            f"Use regex: {self.use_regex}",
+            f"Percentage: {self.percentage}",
+        ]
+
+        if self.pos_tag:
+            parts.append(f"POS filter: {', '.join(self.pos_tag)}")
+            parts.append(f"POS input column: {self.pos_input_column}")
+
+        return "\n".join(parts)
+
+    def iter_positive_matches(self, text: str):
+        text = "" if text is None else str(text)
+
+        if self.use_regex:
+            for pattern in self.patterns:
+                yield from pattern.finditer(text)
+            return
+
+        for match in LEXICAL_TOKEN_REGEX.finditer(text):
+            if match.group(0).lower() in self.words:
+                yield match
+
+    def iter_exception_matches(self, text: str):
+        text = "" if text is None else str(text)
+
+        if self.use_regex:
+            for pattern in self.exception_patterns:
+                yield from pattern.finditer(text)
+            return
+
+        for match in LEXICAL_TOKEN_REGEX.finditer(text):
+            if match.group(0).lower() in self.exception_words:
+                yield match
+
+    def iter_positive_matches_with_pos(
+        self,
+        text: str,
+        tagged_pos: str,
+    ):
+        if not self.pos_tag:
+            yield from self.iter_positive_matches(text)
+            return
+
+        allowed = self._allowed_pos_counter(tagged_pos)
+
+        for match in self.iter_positive_matches(text):
+            word = match.group(0).lower()
+
+            if allowed[word] <= 0:
+                continue
+
+            allowed[word] -= 1
+            yield match
+
+    def iter_exception_matches_with_pos(
+        self,
+        text: str,
+        tagged_pos: str,
+    ):
+        if not self.pos_tag:
+            yield from self.iter_exception_matches(text)
+            return
+
+        allowed = self._allowed_pos_counter(tagged_pos)
+
+        for match in self.iter_exception_matches(text):
+            word = match.group(0).lower()
+
+            if allowed[word] <= 0:
+                continue
+
+            allowed[word] -= 1
+            yield match
+
+    def _count_text(self, text: str) -> int:
+        if not text:
+            return 0
+
+        if self.use_regex:
+            positive_count = self._count_regex_patterns(
+                text,
+                self.patterns,
+            )
+            exception_count = self._count_regex_patterns(
+                text,
+                self.exception_patterns,
+            )
+        else:
+            positive_count = self._count_plain_words(text, self.words)
+            exception_count = self._count_plain_words(
+                text,
+                self.exception_words,
+            )
+
+        return max(positive_count - exception_count, 0)
+
+    def _count_text_with_pos(
+        self,
+        text: str,
+        tagged_pos: str,
+    ) -> int:
         if not text or not tagged_pos:
             return 0
 
-        allowed_words = [
-            item["word"].lower()
-            for item in self._parse_tagged_pos(tagged_pos)
-            if item["tag"] in self.pos_tag
-        ]
+        available = self._allowed_pos_counter(tagged_pos)
 
-        if not allowed_words:
+        if not available:
             return 0
-
-        available = Counter(allowed_words)
 
         if self.use_regex:
             positive_count = self._count_regex_pos_matches(
@@ -186,7 +369,31 @@ class WordPerDictionary(BaseDimension):
 
         return max(positive_count - exception_count, 0)
 
-    def _count_regex_pos_matches(self, text: str, patterns, available: Counter) -> int:
+    def _count_regex_patterns(self, text: str, patterns) -> int:
+        return sum(
+            len(pattern.findall(text))
+            for pattern in patterns
+        )
+
+    def _count_plain_words(
+        self,
+        text: str,
+        words: set[str],
+    ) -> int:
+        source_words = get_lexical_tokens(text)
+
+        return sum(
+            1
+            for word in source_words
+            if word.lower() in words
+        )
+
+    def _count_regex_pos_matches(
+        self,
+        text: str,
+        patterns,
+        available: Counter,
+    ) -> int:
         count = 0
 
         for pattern in patterns:
@@ -222,7 +429,17 @@ class WordPerDictionary(BaseDimension):
 
         return count
 
-    def _parse_tagged_pos(self, tagged_pos: str) -> list[dict[str, str]]:
+    def _allowed_pos_counter(self, tagged_pos: str) -> Counter:
+        return Counter(
+            item["word"].lower()
+            for item in self._parse_tagged_pos(tagged_pos)
+            if item["tag"] in self.pos_tag
+        )
+
+    def _parse_tagged_pos(
+        self,
+        tagged_pos: str,
+    ) -> list[dict[str, str]]:
         if not tagged_pos:
             return []
 
@@ -245,96 +462,27 @@ class WordPerDictionary(BaseDimension):
 
         return items
 
-    def iter_positive_matches(self, text: str):
-        text = "" if text is None else str(text)
+    def _get_tagged_pos(self, item: DimensionInput) -> str:
+        tagged_pos = item.get_annotation("tagged_pos")
 
-        if self.use_regex:
-            for pattern in self.patterns:
-                yield from pattern.finditer(text)
-            return
+        if tagged_pos is not None:
+            return str(tagged_pos)
 
-        for match in LEXICAL_TOKEN_REGEX.finditer(text):
-            if match.group(0).lower() in self.words:
-                yield match
+        value = item.get(self.pos_input_column, "")
 
-    def iter_exception_matches(self, text: str):
-        text = "" if text is None else str(text)
+        return "" if value is None else str(value)
 
-        if self.use_regex:
-            for pattern in self.exception_patterns:
-                yield from pattern.finditer(text)
-            return
-
-        for match in LEXICAL_TOKEN_REGEX.finditer(text):
-            if match.group(0).lower() in self.exception_words:
-                yield match
-
-    def iter_matches(self, text: str):
-        yield from self.iter_positive_matches(text)
-
-    def iter_discarded_matches(self, text: str):
-        yield from self.iter_exception_matches(text)
-
-    def iter_positive_matches_with_pos(self, text: str, tagged_pos: str):
-        if not self.pos_tag:
-            yield from self.iter_positive_matches(text)
-            return
-
-        allowed = self._allowed_pos_counter(tagged_pos)
-
-        for match in self.iter_positive_matches(text):
-            word = match.group(0).lower()
-
-            if allowed[word] <= 0:
-                continue
-
-            allowed[word] -= 1
-            yield match
-
-
-    def iter_exception_matches_with_pos(self, text: str, tagged_pos: str):
-        if not self.pos_tag:
-            yield from self.iter_exception_matches(text)
-            return
-
-        allowed = self._allowed_pos_counter(tagged_pos)
-
-        for match in self.iter_exception_matches(text):
-            word = match.group(0).lower()
-
-            if allowed[word] <= 0:
-                continue
-
-            allowed[word] -= 1
-            yield match
-
-
-    def iter_matches_with_context(self, text: str, *, tagged_pos: str | None = None):
-        if self.pos_tag:
-            yield from self.iter_positive_matches_with_pos(text, tagged_pos or "")
-            return
-
-        yield from self.iter_positive_matches(text)
-
-
-    def iter_discarded_matches_with_context(
+    def _get_word_total(
         self,
+        item: DimensionInput,
         text: str,
-        *,
-        tagged_pos: str | None = None,
-    ):
-        if self.pos_tag:
-            yield from self.iter_exception_matches_with_pos(text, tagged_pos or "")
-            return
+    ) -> int:
+        word_count = item.get("word_count")
 
-        yield from self.iter_exception_matches(text)
+        if word_count is not None:
+            try:
+                return int(word_count)
+            except (TypeError, ValueError):
+                pass
 
-
-    def _allowed_pos_counter(self, tagged_pos: str):
-        from collections import Counter
-
-        return Counter(
-            item["word"].lower()
-            for item in self._parse_tagged_pos(tagged_pos)
-            if item["tag"] in self.pos_tag
-        )
+        return len(get_lexical_tokens(text))

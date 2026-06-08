@@ -1,8 +1,15 @@
 from statistics import pstdev
 from dataclasses import dataclass
 
-from umutextstats.dimensions.base import BaseDimension
-from umutextstats.text.paragraph import split_paragraphs, paragraph_lengths, iter_paragraph_spans
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.iterable_inspectable_dimension import (
+    IterableInspectableDimension,
+)
+from umutextstats.text.paragraph import (
+    split_paragraphs,
+    paragraph_lengths,
+    iter_paragraph_spans,
+)
 from umutextstats.text.patterns import DIALOGUE_PARAGRAPH_REGEX
 
 
@@ -22,12 +29,16 @@ class SimpleMatch:
         return self.end_pos
 
 
-
-class ParagraphCountDimension(BaseDimension):
+class ParagraphCountDimension(IterableInspectableDimension):
     """Count non-empty paragraphs separated by one or more blank lines."""
 
-    def compute(self, df):
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> int:
+        return len(split_paragraphs(self.get_text(item)))
 
+    def compute(self, df):
         if "paragraph_count" in df.columns:
             return df["paragraph_count"]
 
@@ -39,8 +50,15 @@ class ParagraphCountDimension(BaseDimension):
         for paragraph, start, end in iter_paragraph_spans(text):
             yield SimpleMatch(paragraph, start, end)
 
-class AverageParagraphLengthDimension(BaseDimension):
+
+class AverageParagraphLengthDimension(IterableInspectableDimension):
     """Compute the average number of words per paragraph."""
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        return self._average_paragraph_length(self.get_text(item))
 
     def compute(self, df):
         if "paragraph_length_avg" in df.columns:
@@ -64,8 +82,14 @@ class AverageParagraphLengthDimension(BaseDimension):
         return sum(lengths) / len(lengths)
 
 
-class ParagraphLengthDeviationDimension(BaseDimension):
+class ParagraphLengthDeviationDimension(IterableInspectableDimension):
     """Compute the population standard deviation of paragraph lengths."""
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        return self._paragraph_length_std(self.get_text(item))
 
     def compute(self, df):
         if "paragraph_length_std" in df.columns:
@@ -87,9 +111,9 @@ class ParagraphLengthDeviationDimension(BaseDimension):
             return 0.0
 
         return pstdev(lengths)
-    
 
-class DialogueParagraphPercentageDimension(BaseDimension):
+
+class DialogueParagraphPercentageDimension(IterableInspectableDimension):
     """
     Percentage of paragraphs that begin with a dialogue dash.
 
@@ -98,6 +122,12 @@ class DialogueParagraphPercentageDimension(BaseDimension):
         - Hola.
         – Hola.
     """
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        return self._compute_text(self.get_text(item))
 
     def compute(self, df):
         return (
@@ -126,4 +156,3 @@ class DialogueParagraphPercentageDimension(BaseDimension):
         )
 
         return 100.0 * dialogue_count / len(paragraphs)
-

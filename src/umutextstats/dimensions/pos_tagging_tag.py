@@ -1,4 +1,8 @@
-from umutextstats.dimensions.base import BaseDimension
+from umutextstats.config.params import param
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.iterable_inspectable_dimension import (
+    IterableInspectableDimension,
+)
 from umutextstats.text.pos import (
     POSItem,
     parse_tagged_pos,
@@ -7,7 +11,7 @@ from umutextstats.text.pos import (
 )
 
 
-class POSTaggingTag(BaseDimension):
+class POSTaggingTag(IterableInspectableDimension):
     def __init__(
         self,
         key: str,
@@ -18,6 +22,25 @@ class POSTaggingTag(BaseDimension):
         super().__init__(key=key, input_column=input_column)
         self.postagger_tag = postagger_tag
         self.postagger_universal = postagger_universal
+
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "tagged_pos",
+    ):
+        return cls(
+            key=dimension.key,
+            input_column="tagged_pos",
+            postagger_tag=param(dimension, "tag"),
+            postagger_universal=param(dimension, "universal"),
+        )
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        return self._compute_text(self.get_text(item))
 
     def compute(self, df):
         return (
@@ -30,33 +53,58 @@ class POSTaggingTag(BaseDimension):
     def _compute_text(self, tagged_text: str) -> float:
         items = parse_tagged_pos(tagged_text)
 
-        total_words = len(items)
-
-        if total_words == 0:
+        if not items:
             return 0.0
 
-        matches = sum(1 for item in items if self._matches(item))
-
-        return (100 * matches) / total_words
-
-    def _matches(self, item: POSItem) -> bool:
-        return pos_item_matches(
-            item=item,
-            tag=self.postagger_tag,
-            universal=self.postagger_universal,
+        matches = sum(
+            1
+            for item in items
+            if self._matches(item)
         )
+
+        return (100 * matches) / len(items)
 
     def iter_matches(self, tagged_text: str):
         for item in parse_tagged_pos_with_offsets(tagged_text):
             if self._matches(item):
                 yield _POSMatch(item)
 
+    def _matches(
+        self,
+        item: POSItem,
+    ) -> bool:
+        return pos_item_matches(
+            item=item,
+            tag=self.postagger_tag,
+            universal=self.postagger_universal,
+        )
+
+    def inspection_debug_text(self) -> str:
+        parts = []
+
+        if self.postagger_tag:
+            parts.append(f"POS tag: {self.postagger_tag}")
+
+        if self.postagger_universal:
+            parts.append(f"Universal features: {self.postagger_universal}")
+
+        return "\n".join(parts) or "No POS filter configured"
+
 
 class _POSMatch:
-    def __init__(self, item: POSItem):
+    def __init__(
+        self,
+        item: POSItem,
+    ):
         self.item = item
 
-    def group(self, index=0):
+    def group(
+        self,
+        index=0,
+    ):
+        if index != 0:
+            raise IndexError(index)
+
         return self.item.word
 
     def start(self):

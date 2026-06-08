@@ -1,6 +1,6 @@
 import pandas as pd
 
-from umutextstats.dimensions.sentence_count import SentenceCountDimension
+from umutextstats.dimensions.count import SentenceCountDimension
 
 
 def compute(texts):

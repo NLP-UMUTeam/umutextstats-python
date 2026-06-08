@@ -1,9 +1,16 @@
-from umutextstats.dimensions.base import BaseDimension
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.iterable_inspectable_dimension import IterableInspectableDimension
 from umutextstats.text.sentence import count_sentences
 from umutextstats.text.tokenization import get_lexical_tokens
 
 
-class WordPerSentenceDimension(BaseDimension):
+class WordPerSentenceDimension(IterableInspectableDimension):
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        return self._compute_text(self.get_text(item))
+
     def compute(self, df):
         return (
             df[self.input_column]
@@ -12,7 +19,10 @@ class WordPerSentenceDimension(BaseDimension):
             .apply(self._compute_text)
         )
 
-    def _compute_text(self, text: str) -> float:
+    def _compute_text(
+        self,
+        text: str,
+    ) -> float:
         total_words = len(get_lexical_tokens(text))
 
         if total_words == 0:

@@ -1,5 +1,5 @@
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.syllable_count import count_syllables_text
+from umutextstats.text.syllables import count_syllables_text
 from umutextstats.text.tokenization import get_syllabifiable_words
 
 

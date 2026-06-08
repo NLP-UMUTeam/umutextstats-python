@@ -2,41 +2,51 @@ from typing import Type
 
 from umutextstats.dimensions.base import BaseDimension
 
-from umutextstats.dimensions.length import LengthDimension
-from umutextstats.dimensions.sentence_count import SentenceCountDimension
-from umutextstats.dimensions.syllable_count import SyllableCountDimension
-from umutextstats.dimensions.word_count import WordCountDimension
+from umutextstats.dimensions.length import (
+    LengthDimension, 
+    AverageWordLengthDimension, 
+    WordLengthDimension
+)
+
+from umutextstats.dimensions.count import (
+    SentenceCountDimension,
+    WordCountDimension, 
+    CharacterFrequencyDimension, 
+    SyllableCountDimension
+)
 from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
 from umutextstats.dimensions.pattern import PatternDimension
 from umutextstats.dimensions.pos_tagging_tag import POSTaggingTag
 from umutextstats.dimensions.ner_tagging_tag import NERTaggingTag
-from umutextstats.dimensions.average_word_length import AverageWordLengthDimension
 from umutextstats.dimensions.enclitics_personal_pronouns import EncliticsPersonalPronounsDictionary
 from umutextstats.dimensions.periphrasis import PeriphrasisDimension
-from umutextstats.dimensions.character_count import CharacterCountDimension
-from umutextstats.dimensions.error_capitalization import ErrorCapitalizationStartingWithLowerCaseDimension
-from umutextstats.dimensions.error_mispelling import ErrorMispellingDimension
-from umutextstats.dimensions.error_repeated_words import ErrorMiscTwoOrMoreEqualWordsDimension
-from umutextstats.dimensions.error_mispelling_accents import ErrorMispellingAccentsDimension
-from umutextstats.dimensions.error_style_numbers import ErrorStyleSentencesStartingWithNumbers
-from umutextstats.dimensions.error_style_same_start import ErrorStyleSentencesStartingWithTheSameWord
+from umutextstats.dimensions.error import (
+    ErrorCapitalizationStartingWithLowerCaseDimension, 
+    ErrorMispellingDimension, 
+    ErrorMiscTwoOrMoreEqualWordsDimension, 
+    ErrorMispellingAccentsDimension, 
+    ErrorStyleSentencesStartingWithNumbers, 
+    ErrorStyleSentencesStartingWithTheSameWord
+)
 from umutextstats.dimensions.grammatical_gender import GrammaticalGenderDimension
 from umutextstats.dimensions.language import LanguageDimension
 from umutextstats.dimensions.perspicuity import PerspicuityDimension
 from umutextstats.dimensions.pos_tagging_expression import POSTaggingExpression
 from umutextstats.dimensions.readability import ReadabilityDimension
-from umutextstats.dimensions.rtie import RTIEDimension, RTIEDeviationDimension
-from umutextstats.dimensions.sentence_per_dictionary import SentencePerDictionary
+from umutextstats.dimensions.rtie import (
+    RTIEDimension, 
+    RTIEDeviationDimension
+)
 from umutextstats.dimensions.syllable_per_word import SyllablePerWordDimension
-from umutextstats.dimensions.twitter_reply_to import TwitterReplyToDimension
 from umutextstats.dimensions.verb_per_dictionary import VerbPerDictionary
 from umutextstats.dimensions.words_per_sentence import WordPerSentenceDimension
 from umutextstats.dimensions.word_unique import WordUniqueDimension
 from umutextstats.dimensions.word_case import WordCase
-from umutextstats.dimensions.word_length import WordLengthDimension
-from umutextstats.dimensions.dependency_tag import DependencyTag
-from umutextstats.dimensions.dependency_depth import DependencyDepthDimension
-from umutextstats.dimensions.dependency_distance import DependencyDistanceDimension
+from umutextstats.dimensions.dependency import (
+    DependencyTag, 
+    DependencyDepthDimension, 
+    DependencyDistanceDimension
+)
 from umutextstats.dimensions.root_pos_tag import RootPOSTagDimension
 from umutextstats.dimensions.passive_voice_dependency import PassiveVoiceDependencyDimension
 from umutextstats.dimensions.document_structure_paragraphs import ParagraphCountDimension, AverageParagraphLengthDimension, ParagraphLengthDeviationDimension, DialogueParagraphPercentageDimension
@@ -55,10 +65,9 @@ DIMENSION_REGISTRY: dict[str, Type[BaseDimension]] = {
     "PatternDimension": PatternDimension,
     "POSTaggingTag": POSTaggingTag,
     "NERTaggingTag": NERTaggingTag,
-    "AverageWordLengthDimension": AverageWordLengthDimension,
     "EncliticsPersonalPronounsDictionary": EncliticsPersonalPronounsDictionary,
     "PeriphrasisDimension": PeriphrasisDimension,
-    "CharacterCountDimension": CharacterCountDimension,
+    "CharacterFrequencyDimension": CharacterFrequencyDimension,
     "ErrorCapitalizationStartingWithLowerCaseDimension": ErrorCapitalizationStartingWithLowerCaseDimension,
     "ErrorMispellingDimension": ErrorMispellingDimension,
     "ErrorMiscTwoOrMoreEqualWordsDimension": ErrorMiscTwoOrMoreEqualWordsDimension,
@@ -72,14 +81,13 @@ DIMENSION_REGISTRY: dict[str, Type[BaseDimension]] = {
     "ReadabilityDimension": ReadabilityDimension,
     "RTIEDimension": RTIEDimension,
     "RTIEDeviationDimension": RTIEDeviationDimension,
-    "SentencePerDictionary": SentencePerDictionary,
     "SyllablePerWordDimension": SyllablePerWordDimension,
-    "TwitterReplyToDimension": TwitterReplyToDimension,
     "VerbPerDictionary": VerbPerDictionary,
     "WordPerSentenceDimension": WordPerSentenceDimension,
     "WordUniqueDimension": WordUniqueDimension,
     "WordCase": WordCase,
     "WordLengthDimension": WordLengthDimension,
+    "AverageWordLengthDimension": AverageWordLengthDimension,
     "DependencyTag": DependencyTag,
     "DependencyDepthDimension": DependencyDepthDimension,
     "DependencyDistanceDimension": DependencyDistanceDimension,

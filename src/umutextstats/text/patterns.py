@@ -167,6 +167,15 @@ DIALOGUE_PARAGRAPH_REGEX = re.compile(
 
 
 """
+Matches repeated words, ignoring case and allowing for any amount of whitespace between them.
+"""
+
+REPEATED_WORD_REGEX = re.compile(
+    r"(?i)(?<!\p{L})(\p{L}+)\s+\1(?!\p{L})"
+)
+
+
+"""
 Matches part-of-speech tagged items encoded as:
 
     word__(TAG)
@@ -260,3 +269,13 @@ WORD_TOKEN_REGEX = re.compile(
     r"@?\b[\p{L}\p{N}]+\b",
     re.UNICODE,
 )
+
+
+"""
+Matches simple word-like tokens, without numbers.
+
+Examples:
+- palabra
+"""
+
+WORD_RE = re.compile(r"\p{L}+", re.UNICODE)

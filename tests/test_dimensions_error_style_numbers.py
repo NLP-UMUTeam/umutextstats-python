@@ -1,6 +1,6 @@
 import pandas as pd
 
-from umutextstats.dimensions.error_style_numbers import (
+from umutextstats.dimensions.error import (
     ErrorStyleSentencesStartingWithNumbers,
 )
 

@@ -4,8 +4,9 @@ from tqdm.auto import tqdm
 import pandas as pd
 
 from umutextstats.config.models import DimensionConfig, UMUTextStatsConfig
-from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
 from umutextstats.config.params import param, split_param_list
+from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.dimensions.factory import build_dimension_instance
 
 class DimensionEngine:
@@ -92,7 +93,14 @@ class DimensionEngine:
                 dimension_cls=dimension_cls,
                 default_input_column=self.input_column,
             )
-            data[key] = instance.compute(df)
+            
+
+            # Pending refactor: ideally dimensions should handle this internally if needed, but for now we can special-case it here
+            if hasattr(instance, "compute_inputs"):
+                items = self._build_dimension_inputs(df, dimension)
+                data[key] = instance.compute_inputs(items)
+            else:
+                data[key] = instance.compute(df)
 
     def _compute_composite_dimension(self, dimension, data, n_rows):
 
@@ -199,3 +207,34 @@ class DimensionEngine:
         })
 
         return frame.apply(pd.to_numeric, errors="coerce").fillna(0).sum(axis=1)
+    
+
+    def _build_dimension_inputs(
+        self,
+        df,
+        dimension: DimensionConfig,
+    ) -> list[DimensionInput]:
+        items = []
+
+        for _, row in df.iterrows():
+            row_dict = row.to_dict()
+
+            annotations = {
+                key: value
+                for key, value in row_dict.items()
+                if key in {
+                    "tagged_pos",
+                    "tagged_lemmas",
+                    "sentences",
+                    "tokens",
+                }
+            }
+
+            items.append(
+                DimensionInput(
+                    row=row_dict,
+                    annotations=annotations,
+                )
+            )
+
+        return items

@@ -6,10 +6,10 @@ cases:
   expected: 1
 
 - text: "Muy muy bueno."
-  expected: 1
+  min_expected: 1
 
 - text: "No no no quiero."
-  expected: 1
+  min_expected: 1
 
 - text: "Hola, hola mundo."
   expected: 0

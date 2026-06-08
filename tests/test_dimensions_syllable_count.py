@@ -2,11 +2,11 @@
 
 import pandas as pd
 
-from umutextstats.dimensions.syllable_count import (
+from umutextstats.text.syllables import (
     count_syllables_word,
     count_syllables_text,
 )
-from umutextstats.dimensions.syllable_count import SyllableCountDimension
+from umutextstats.dimensions.count import SyllableCountDimension
 
 
 def test_count_syllables_word_simple():

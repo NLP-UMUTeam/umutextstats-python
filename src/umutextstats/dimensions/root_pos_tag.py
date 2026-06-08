@@ -1,13 +1,17 @@
 from __future__ import annotations
 
-import regex as re
+from umutextstats.config.params import param
+from umutextstats.dimensions.dimension_input import DimensionInput
+from umutextstats.inspection.scalar_inspectable_dimension import (
+    ScalarInspectableDimension,
+)
+from umutextstats.text.patterns import (
+    POS_ITEM_REGEX,
+    DEPENDENCY_ITEM_REGEX,
+)
 
-from umutextstats.dimensions.base import BaseDimension
-from umutextstats.text.patterns import POS_ITEM_REGEX
-from umutextstats.text.patterns import DEPENDENCY_ITEM_REGEX
 
-
-class RootPOSTagDimension(BaseDimension):
+class RootPOSTagDimension(ScalarInspectableDimension):
     def __init__(
         self,
         key: str,
@@ -19,6 +23,39 @@ class RootPOSTagDimension(BaseDimension):
         self.tagged_dep_column = tagged_dep_column
         self.tag = tag
 
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "tagged_pos",
+    ):
+        return cls(
+            key=dimension.key,
+            input_column="tagged_pos",
+            tagged_dep_column=param(
+                dimension,
+                "tagged_dep_column",
+                "tagged_dep",
+            ),
+            tag=param(dimension, "tag"),
+        )
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
+        tagged_pos = self.get_text(item)
+
+        tagged_dep = (
+            item.get_annotation(self.tagged_dep_column)
+            or item.get(self.tagged_dep_column, "")
+        )
+
+        return self._compute_text(
+            tagged_pos=str(tagged_pos),
+            tagged_dep=str(tagged_dep),
+        )
+
     def compute(self, df):
         return df.apply(self._compute_row, axis=1)
 
@@ -26,13 +63,26 @@ class RootPOSTagDimension(BaseDimension):
         tagged_pos = str(row.get(self.input_column, "") or "")
         tagged_dep = str(row.get(self.tagged_dep_column, "") or "")
 
+        return self._compute_text(
+            tagged_pos=tagged_pos,
+            tagged_dep=tagged_dep,
+        )
+
+    def _compute_text(
+        self,
+        tagged_pos: str,
+        tagged_dep: str,
+    ) -> float:
         pos_sentences = self._split_sentences(tagged_pos)
         dep_sentences = self._split_sentences(tagged_dep)
 
         total_roots = 0
         matches = 0
 
-        for pos_sentence, dep_sentence in zip(pos_sentences, dep_sentences):
+        for pos_sentence, dep_sentence in zip(
+            pos_sentences,
+            dep_sentences,
+        ):
             pos_items = self._parse_pos_sentence(pos_sentence)
             dep_items = self._parse_dep_sentence(dep_sentence)
 
@@ -51,7 +101,10 @@ class RootPOSTagDimension(BaseDimension):
 
                 total_roots += 1
 
-                if self.tag and pos_items[root_index]["tag"] == self.tag:
+                if (
+                    self.tag
+                    and pos_items[root_index]["tag"] == self.tag
+                ):
                     matches += 1
 
         if total_roots == 0:
@@ -59,7 +112,10 @@ class RootPOSTagDimension(BaseDimension):
 
         return (100 * matches) / total_roots
 
-    def _split_sentences(self, tagged_text: str) -> list[str]:
+    def _split_sentences(
+        self,
+        tagged_text: str,
+    ) -> list[str]:
         if not tagged_text:
             return []
 
@@ -69,7 +125,10 @@ class RootPOSTagDimension(BaseDimension):
             if sentence.strip()
         ]
 
-    def _parse_pos_sentence(self, sentence: str) -> list[dict[str, str]]:
+    def _parse_pos_sentence(
+        self,
+        sentence: str,
+    ) -> list[dict[str, str]]:
         items = []
 
         for raw_item in sentence.split(", "):
@@ -88,7 +147,10 @@ class RootPOSTagDimension(BaseDimension):
 
         return items
 
-    def _parse_dep_sentence(self, sentence: str) -> list[dict[str, str | int]]:
+    def _parse_dep_sentence(
+        self,
+        sentence: str,
+    ) -> list[dict[str, str | int]]:
         items = []
 
         for raw_item in sentence.split(", "):
@@ -111,3 +173,10 @@ class RootPOSTagDimension(BaseDimension):
             )
 
         return items
+
+    def inspection_debug_text(self) -> str:
+        return (
+            f"Root POS tag filter: {self.tag}\n"
+            f"POS column: {self.input_column}\n"
+            f"Dependency column: {self.tagged_dep_column}"
+        )

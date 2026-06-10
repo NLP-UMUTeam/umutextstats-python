@@ -1,3 +1,4 @@
+from umutextstats.config.params import param
 from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
@@ -63,6 +64,29 @@ class WordLengthDimension(ScalarInspectableDimension):
         self.length = int(length)
         self.comparator = comparator or "="
         self.percentage = percentage
+
+    @classmethod
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "text_norm",
+    ):
+        
+        percentage = str(
+            param(dimension, "percentage", True)
+        ).lower() not in {
+            "0",
+            "false",
+            "no",
+        }        
+
+        return cls(
+            key=dimension.key,
+            length=int(param(dimension, "length", 0)),
+            comparator=param(dimension, "comparator", "="),
+            input_column=input_column,
+            percentage=percentage
+        )
 
     def compute(self, df):
         return (

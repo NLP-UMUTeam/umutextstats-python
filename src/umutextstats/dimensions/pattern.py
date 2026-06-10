@@ -5,9 +5,6 @@ from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.iterable_inspectable_dimension import IterableInspectableDimension
 
 class PatternDimension(IterableInspectableDimension):
-    ...
-
-class PatternDimension(IterableInspectableDimension):
     def __init__(
         self,
         key: str,

@@ -9,6 +9,7 @@ def build_runtime_dimension(
     dimension: DimensionConfig,
     default_input_column: str = "text_norm",
 ):
+
     if not dimension.class_name:
         return None
 
@@ -29,11 +30,13 @@ def build_dimension_instance(
     dimension_cls,
     default_input_column: str = "text_norm",
 ):
+    
     input_column = resolve_input_column(
         dimension,
         default_input_column=default_input_column,
     )
 
+    
     if hasattr(dimension_cls, "from_config"):
         return dimension_cls.from_config(
             dimension=dimension,

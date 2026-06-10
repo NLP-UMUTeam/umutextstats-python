@@ -9,7 +9,6 @@ from umutextstats.config.explain import find_dimension
 from umutextstats.dimensions.factory import build_runtime_dimension
 from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.config.models import UMUTextStatsConfig
-from umutextstats.text.patterns import POS_ITEM_REGEX
 from umutextstats.inspection.models import (
     InspectMatch,
     DimensionInspection,
@@ -45,14 +44,7 @@ def inspect_dimension_text(
         raise ValueError(f"Dimension not found: {key}")
 
     dimension = explanation.dimension
-    if dimension.children:
-        return _inspect_composite_dimension(config, dimension, text)
-
     runtime_dimension = build_runtime_dimension(dimension)
-
-    tagged_pos = None
-    if annotations:
-        tagged_pos = annotations.get("tagged_pos")
 
     row = {
         "text": text,
@@ -71,18 +63,8 @@ def inspect_dimension_text(
 
     if runtime_dimension is not None:
         inspection = runtime_dimension.inspect(item)
-
         if inspection is not None:
             return inspection    
-
-
-    if runtime_dimension is not None and hasattr(runtime_dimension, "iter_matches"):
-        return _inspect_iterable_dimension(
-            dimension=dimension,
-            runtime_dimension=runtime_dimension,
-            text=text,
-            tagged_pos=tagged_pos,
-        )    
 
 
     return _inspect_not_supported_dimension(dimension, text)

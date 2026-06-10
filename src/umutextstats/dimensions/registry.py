@@ -40,6 +40,8 @@ from umutextstats.dimensions.rtie import (
 from umutextstats.dimensions.syllable_per_word import SyllablePerWordDimension
 from umutextstats.dimensions.verb_per_dictionary import VerbPerDictionary
 from umutextstats.dimensions.words_per_sentence import WordPerSentenceDimension
+from umutextstats.dimensions.ratio import RatioDimension
+from umutextstats.dimensions.composite import CompositeDimension
 from umutextstats.dimensions.word_unique import WordUniqueDimension
 from umutextstats.dimensions.word_case import WordCase
 from umutextstats.dimensions.dependency import (
@@ -85,6 +87,8 @@ DIMENSION_REGISTRY: dict[str, Type[BaseDimension]] = {
     "VerbPerDictionary": VerbPerDictionary,
     "WordPerSentenceDimension": WordPerSentenceDimension,
     "WordUniqueDimension": WordUniqueDimension,
+    "RatioDimension": RatioDimension,
+    "CompositeDimension": CompositeDimension,
     "WordCase": WordCase,
     "WordLengthDimension": WordLengthDimension,
     "AverageWordLengthDimension": AverageWordLengthDimension,

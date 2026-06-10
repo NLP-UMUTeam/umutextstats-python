@@ -1,13 +1,17 @@
 from contextlib import nullcontext
-from tqdm.auto import tqdm
 
 import pandas as pd
+from tqdm.auto import tqdm
 
 from umutextstats.config.models import DimensionConfig, UMUTextStatsConfig
-from umutextstats.config.params import param, split_param_list
-from umutextstats.dimensions.registry import resolve_dimension, normalize_class_name
+from umutextstats.dimensions.composite import CompositeDimension
 from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.dimensions.factory import build_dimension_instance
+from umutextstats.dimensions.registry import (
+    normalize_class_name,
+    resolve_dimension,
+)
+
 
 class DimensionEngine:
     def __init__(
@@ -45,102 +49,98 @@ class DimensionEngine:
 
         return pd.DataFrame(data)
 
-    def _iter_dimensions(self, dimensions: list[DimensionConfig]):
+    def _iter_dimensions(
+        self,
+        dimensions: list[DimensionConfig],
+    ):
         for dimension in dimensions:
             yield dimension
 
             if dimension.children:
                 yield from self._iter_dimensions(dimension.children)
 
-    def _compute_dimension(self, df, dimension: DimensionConfig, data: dict):
-        
+    def _compute_dimension(
+        self,
+        df,
+        dimension: DimensionConfig,
+        data: dict,
+    ) -> None:
         key = dimension.key
-        
-        if dimension.key in data:
+
+        if key in data:
             return
-        
+
         class_name = normalize_class_name(dimension.class_name)
 
         with self._track_dimension(key, class_name):
-            for child in dimension.children:
-                self._compute_dimension(df, child, data)
+            self._compute_children(df, dimension, data)
 
             if dimension.children:
-                data[key] = self._compute_composite_dimension(
-                    dimension,
-                    data,
-                    len(df),
+                instance = CompositeDimension.from_config(
+                    dimension=dimension,
+                    input_column=self.input_column,
+                )
+
+                data[key] = instance.compute_from_data(
+                    data=data,
+                    n_rows=len(df),
                 )
                 return
 
-            dimension_cls = resolve_dimension(dimension.class_name)
-            
-            if class_name == "RatioDimension":
-                data[key] = self._compute_ratio_dimension(
-                    dimension,
-                    data,
-                    len(df),
-                )
-                return
+            instance = self._build_instance(dimension)
 
-            if dimension_cls is None:
+
+            if instance is None:
                 if self.include_unimplemented:
                     data[key] = [""] * len(df)
                 return
 
-            instance = build_dimension_instance (
-                dimension=dimension,
-                dimension_cls=dimension_cls,
-                default_input_column=self.input_column,
-            )
-            
+            if hasattr(instance, "compute_from_data"):
+                data[key] = instance.compute_from_data(
+                    data=data,
+                    n_rows=len(df),
+                )
+                return
 
-            # Pending refactor: ideally dimensions should handle this internally if needed, but for now we can special-case it here
             if hasattr(instance, "compute_inputs"):
-                items = self._build_dimension_inputs(df, dimension)
+                items = self._build_dimension_inputs(df)
                 data[key] = instance.compute_inputs(items)
-            else:
-                data[key] = instance.compute(df)
+                return
 
-    def _compute_composite_dimension(self, dimension, data, n_rows):
+            data[key] = instance.compute(df)
 
-        strategy = (dimension.strategy or "CompositeStrategyNone").upper()
+    def _compute_children(
+        self,
+        df,
+        dimension: DimensionConfig,
+        data: dict,
+    ) -> None:
+        for child in dimension.children:
+            self._compute_dimension(df, child, data)
 
-        child_keys = [
-            child.key
-            for child in dimension.children
-            if child.key in data
-        ]
+    def _build_instance(
+        self,
+        dimension: DimensionConfig,
+    ):
+        if not dimension.class_name:
+            return None
 
-        if not child_keys:
-            return [0] * n_rows
+        dimension_cls = resolve_dimension(dimension.class_name)
 
-        child_df = pd.DataFrame({
-            key: data[key]
-            for key in child_keys
-        })
+        if dimension_cls is None:
+            return None
 
-        child_df = child_df.apply(pd.to_numeric, errors="coerce").fillna(0)
+        return build_dimension_instance(
+            dimension=dimension,
+            dimension_cls=dimension_cls,
+            default_input_column=self.input_column,
+        )
 
-        if strategy == "COMPOSITESTRATEGYNONE":
-            return [None] * n_rows
-
-        if strategy == "COMPOSITESTRATEGYSUM":
-            return child_df.sum(axis=1)
-
-        if strategy == "COMPOSITESTRATEGYAVG":
-            return child_df.mean(axis=1)
-
-        if strategy == "COMPOSITESTRATEGYMAX":
-            return child_df.max(axis=1)
-
-        if strategy == "COMPOSITESTRATEGYMIN":
-            return child_df.min(axis=1)
-
-        # fallback seguro
-        return child_df.sum(axis=1)
-
-    def _track_dimension(self, key: str, class_name: str | None):
+    def _track_dimension(
+        self,
+        key: str,
+        class_name: str | None,
+    ):
         if self.profiler is None:
             return nullcontext()
 
@@ -150,69 +150,9 @@ class DimensionEngine:
             class_name=class_name or "",
         )
 
-        
-        
-    def _compute_ratio_dimension(self, dimension, data, n_rows):
-        numerator_keys = split_param_list(
-            param(dimension, "numerator", "")
-        )
-        denominator_keys = split_param_list(
-            param(dimension, "denominator", "")
-        )
-
-        scale = float(param(dimension, "scale") or 1.0)
-        zero_division = float(param(dimension, "zero_division") or 0.0)
-
-        missing = [
-            key
-            for key in numerator_keys + denominator_keys
-            if key not in data
-        ]
-
-        if missing:
-            raise ValueError(
-                f"Missing columns for RatioDimension '{dimension.key}': "
-                f"{', '.join(missing)}"
-            )
-
-        numerator = self._sum_data_keys(data, numerator_keys, n_rows)
-        denominator = self._sum_data_keys(data, denominator_keys, n_rows)
-
-        result = numerator / denominator.replace(0, pd.NA)
-        result = (
-            pd.to_numeric(result, errors="coerce")
-            .fillna(zero_division)
-        )
-
-        return result * scale
-        
-
-        
-        
-    def _split_param_list(self, value: str) -> list[str]:
-        return [
-            item.strip()
-            for item in str(value).split("|")
-            if item.strip()
-        ]
-
-
-    def _sum_data_keys(self, data, keys, n_rows):
-        if not keys:
-            return pd.Series([0.0] * n_rows)
-
-        frame = pd.DataFrame({
-            key: data[key]
-            for key in keys
-        })
-
-        return frame.apply(pd.to_numeric, errors="coerce").fillna(0).sum(axis=1)
-    
-
     def _build_dimension_inputs(
         self,
         df,
-        dimension: DimensionConfig,
     ) -> list[DimensionInput]:
         items = []
 
@@ -222,11 +162,13 @@ class DimensionEngine:
             annotations = {
                 key: value
                 for key, value in row_dict.items()
-                if key in {
-                    "tagged_pos",
-                    "tagged_lemmas",
+                if key.startswith("tagged_")
+                or key in {
                     "sentences",
                     "tokens",
+                    "lemmas",
+                    "dependencies",
+                    "entities",
                 }
             }
 

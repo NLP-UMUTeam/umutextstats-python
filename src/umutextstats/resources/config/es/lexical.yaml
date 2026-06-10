@@ -1,22 +1,55 @@
 dimensions:
 - key: lexical
   children:
-  - key: lexical-locations
+
+  - key: lexical-locations-density
     class: NERTaggingTag
-    description: Percentage of words of related to locations
+    description: Percentage of location entities over all words
     tag: LOC
-  - key: lexical-organisations
+    normalizer: words
+
+  - key: lexical-organisations-density
     class: NERTaggingTag
-    description: Percentage of words of related to organisations
+    description: Percentage of organisation entities over all words
     tag: ORG
-  - key: lexical-persons
+    normalizer: words
+
+  - key: lexical-persons-density
     class: NERTaggingTag
-    description: Percentage of words of related to persons
+    description: Percentage of person entities over all words
     tag: PER
-  - key: lexical-others
+    normalizer: words
+
+  - key: lexical-others-density
     class: NERTaggingTag
-    description: Percentage of words of related to other named entities
+    description: Percentage of miscellaneous entities over all words
     tag: MISC
+    normalizer: words
+
+  - key: lexical-locations-share
+    class: NERTaggingTag
+    description: Percentage of location entities over all named entities
+    tag: LOC
+    normalizer: entities
+
+  - key: lexical-organisations-share
+    class: NERTaggingTag
+    description: Percentage of organisation entities over all named entities
+    tag: ORG
+    normalizer: entities
+
+  - key: lexical-persons-share
+    class: NERTaggingTag
+    description: Percentage of person entities over all named entities
+    tag: PER
+    normalizer: entities
+
+  - key: lexical-others-share
+    class: NERTaggingTag
+    description: Percentage of miscellaneous entities over all named entities
+    tag: MISC
+    normalizer: entities
+
   - key: lexical-animals
     class: WordPerDictionary
     description: Percentage of words of related to animals
@@ -85,26 +118,6 @@ dimensions:
     class: WordPerDictionary
     description: Percentage of words of related to home
     dictionary: home
-  - key: lexical-ner-person-dominance
-    class: RatioDimension
-    description: Person entity dominance over non-person entities
-    numerator: lexical-persons
-    denominator: lexical-locations|lexical-organisations|lexical-others
-  - key: lexical-ner-institutional-load
-    class: RatioDimension
-    description: Organization entity dominance over other named entities
-    numerator: lexical-organisations
-    denominator: lexical-persons|lexical-locations|lexical-others
-  - key: lexical-ner-geographical-load
-    class: RatioDimension
-    description: Location entity dominance over other named entities
-    numerator: lexical-locations
-    denominator: lexical-persons|lexical-organisations|lexical-others
-  - key: lexical-ner-entity-specificity
-    class: RatioDimension
-    description: Specific named entity load over miscellaneous entities
-    numerator: lexical-persons|lexical-locations|lexical-organisations
-    denominator: lexical-others
   - key: lexical-social
     children:
     - key: lexical-social-inclusive

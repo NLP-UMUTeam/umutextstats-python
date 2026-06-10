@@ -8,6 +8,10 @@ from umutextstats.inspection.iterable_inspectable_dimension import (
 from umutextstats.text.patterns import NER_ITEM_REGEX
 
 
+NER_NORMALIZER_WORDS = "words"
+NER_NORMALIZER_ENTITIES = "entities"
+
+
 @dataclass(frozen=True)
 class NERMatch:
     text: str
@@ -32,9 +36,11 @@ class NERTaggingTag(IterableInspectableDimension):
         key: str,
         tag: str | None = None,
         input_column: str = "tagged_ner",
+        normalizer: str = NER_NORMALIZER_ENTITIES,
     ):
         super().__init__(key=key, input_column=input_column)
         self.tag = tag
+        self.normalizer = normalizer
 
     @classmethod
     def from_config(
@@ -48,7 +54,12 @@ class NERTaggingTag(IterableInspectableDimension):
             input_column=param(
                 dimension,
                 "input_column",
-                "tagged_ner",
+                input_column,
+            ),
+            normalizer=param(
+                dimension,
+                "normalizer",
+                NER_NORMALIZER_ENTITIES,
             ),
         )
 
@@ -56,6 +67,7 @@ class NERTaggingTag(IterableInspectableDimension):
         self,
         item: DimensionInput,
     ) -> float:
+
         return self._compute_text(self.get_text(item))
 
     def compute(self, df):
@@ -86,13 +98,12 @@ class NERTaggingTag(IterableInspectableDimension):
         self,
         tagged_ner: str,
     ) -> float:
-        entities = self._parse_entities(tagged_ner)
-
-        if not entities:
-            return 0.0
+        tagged_ner = "" if tagged_ner is None else str(tagged_ner)
 
         if not self.tag:
             return 0.0
+
+        entities = self._parse_entities(tagged_ner)
 
         matches = sum(
             1
@@ -100,7 +111,29 @@ class NERTaggingTag(IterableInspectableDimension):
             if entity["tag"] == self.tag
         )
 
-        return (100 * matches) / len(entities)
+        denominator = self._get_denominator(
+            tagged_ner=tagged_ner,
+            entities=entities,
+        )
+
+        if denominator == 0:
+            return 0.0
+
+        return (100 * matches) / denominator
+
+    def _get_denominator(
+        self,
+        tagged_ner: str,
+        entities: list[dict[str, str]],
+    ) -> int:
+
+        if self.normalizer == NER_NORMALIZER_ENTITIES:
+            return len(entities)
+
+        if self.normalizer == NER_NORMALIZER_WORDS:
+            return len(tagged_ner.split())
+
+        raise ValueError(f"Unknown NER normalizer: {self.normalizer}")
 
     def _parse_entities(
         self,
@@ -117,9 +150,9 @@ class NERTaggingTag(IterableInspectableDimension):
             for match in NER_ITEM_REGEX.finditer(tagged_ner)
         ]
 
-
     def inspection_debug_text(self) -> str:
         return (
             f"NER tag: {self.tag}\n"
-            f"Input column: {self.input_column}"
+            f"Input column: {self.input_column}\n"
+            f"Normalizer: {self.normalizer}"
         )

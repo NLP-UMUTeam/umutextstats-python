@@ -32,11 +32,17 @@ class RatioDimension(BaseDimension):
     ):
         return cls(
             key=dimension.key,
-            numerator=split_param_list(param(dimension, "numerator", "")),
-            denominator=split_param_list(param(dimension, "denominator", "")),
+            numerator=split_param_list(
+                param(dimension, "numerator", "")
+            ),
+            denominator=split_param_list(
+                param(dimension, "denominator", "")
+            ),
             input_column=input_column,
             scale=float(param(dimension, "scale") or 1.0),
-            zero_division=float(param(dimension, "zero_division") or 0.0),
+            zero_division=float(
+                param(dimension, "zero_division") or 0.0
+            ),
         )
 
     def compute(self, df):
@@ -45,17 +51,67 @@ class RatioDimension(BaseDimension):
             n_rows=len(df),
         )
 
-    def compute_single(self, item: DimensionInput) -> float:
+    def compute_from_data(
+        self,
+        data: dict[str, pd.Series],
+        n_rows: int,
+    ) -> pd.Series:
+        numerator = self._sum_data_keys(
+            data=data,
+            keys=self.numerator,
+            n_rows=n_rows,
+        )
+
+        denominator = self._sum_data_keys(
+            data=data,
+            keys=self.denominator,
+            n_rows=n_rows,
+        )
+
+        missing = [
+            key
+            for key in self.numerator + self.denominator
+            if key not in data
+        ]
+
+        if missing:
+            raise ValueError(
+                f"Missing columns for RatioDimension '{self.key}': "
+                f"{', '.join(missing)}"
+            )
+
+        result = numerator / denominator.replace(0, pd.NA)
+
+        result = (
+            pd.to_numeric(result, errors="coerce")
+            .fillna(self.zero_division)
+        )
+
+        return result * self.scale
+
+    def compute_single(
+        self,
+        item: DimensionInput,
+    ) -> float:
         numerator = self._sum_item_keys(item, self.numerator)
         denominator = self._sum_item_keys(item, self.denominator)
 
-        if denominator == 0:
-            return self.zero_division
+        return self._safe_ratio(
+            numerator=numerator,
+            denominator=denominator,
+        )
 
-        return (numerator / denominator) * self.scale
+    def inspect(
+        self,
+        item: DimensionInput,
+    ) -> DimensionInspection:
+        numerator = self._sum_item_keys(item, self.numerator)
+        denominator = self._sum_item_keys(item, self.denominator)
 
-    def inspect(self, item: DimensionInput) -> DimensionInspection:
-        value = self.compute_single(item)
+        value = self._safe_ratio(
+            numerator=numerator,
+            denominator=denominator,
+        )
 
         return DimensionInspection(
             key=self.key,
@@ -66,29 +122,24 @@ class RatioDimension(BaseDimension):
             discarded_matches=[],
             debug_text=(
                 f"Value: {value}\n"
-                f"Numerator: {' + '.join(self.numerator) or '0'}\n"
-                f"Denominator: {' + '.join(self.denominator) or '0'}\n"
+                f"Numerator keys: {self._format_keys(self.numerator)}\n"
+                f"Numerator value: {numerator}\n"
+                f"Denominator keys: {self._format_keys(self.denominator)}\n"
+                f"Denominator value: {denominator}\n"
                 f"Scale: {self.scale}\n"
                 f"Zero division: {self.zero_division}"
             ),
         )
 
-    def compute_from_data(
+    def _safe_ratio(
         self,
-        data: dict[str, pd.Series],
-        n_rows: int,
-    ) -> pd.Series:
-        numerator = self._sum_data_keys(data, self.numerator, n_rows)
-        denominator = self._sum_data_keys(data, self.denominator, n_rows)
+        numerator: float,
+        denominator: float,
+    ) -> float:
+        if denominator == 0:
+            return self.zero_division
 
-        result = numerator / denominator.replace(0, pd.NA)
-
-        result = (
-            pd.to_numeric(result, errors="coerce")
-            .fillna(self.zero_division)
-        )
-
-        return result * self.scale
+        return (numerator / denominator) * self.scale
 
     def _sum_data_keys(
         self,
@@ -101,7 +152,10 @@ class RatioDimension(BaseDimension):
 
         frame = pd.DataFrame(
             {
-                key: data.get(key, pd.Series([0.0] * n_rows))
+                key: data.get(
+                    key,
+                    pd.Series([0.0] * n_rows),
+                )
                 for key in keys
             }
         )
@@ -136,3 +190,9 @@ class RatioDimension(BaseDimension):
             return value
 
         return split_param_list(value)
+
+    def _format_keys(
+        self,
+        keys: list[str],
+    ) -> str:
+        return " + ".join(keys) if keys else "0"

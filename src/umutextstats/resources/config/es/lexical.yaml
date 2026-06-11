@@ -7,7 +7,6 @@ dimensions:
     description: Percentage of location entities over all words
     tag: LOC
     normalizer: words
-    input_column: tagged_ner
 
   - key: lexical-organisations-density
     class: NERTaggingTag

@@ -1,5 +1,6 @@
 import pandas as pd
 
+from umutextstats.dimensions.mixins import TextComputeMixin
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
@@ -8,7 +9,7 @@ from umutextstats.text.syllables import count_syllables_text
 from umutextstats.text.tokenization import get_lexical_tokens
 
 
-class ReadabilityDimension(ScalarInspectableDimension):
+class ReadabilityDimension(TextComputeMixin, ScalarInspectableDimension):
     """
     Compute the readability score for the configured input text.
 
@@ -18,28 +19,6 @@ class ReadabilityDimension(ScalarInspectableDimension):
         - 60 * (syllables / words)
         - 102 * (sentences / words)
     """
-
-    def compute_single(
-        self,
-        row: pd.Series,
-    ) -> float:
-        """
-        Compute readability for a single row.
-        """
-        return self._compute_text(
-            self.get_text(row)
-        )
-
-    def compute(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.Series:
-        """
-        Compute readability for all rows.
-        """
-        return self.get_text_series(df).apply(
-            self._compute_text
-        )
 
     def _compute_text(
         self,

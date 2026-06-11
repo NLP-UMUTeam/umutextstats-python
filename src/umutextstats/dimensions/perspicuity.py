@@ -1,5 +1,6 @@
 import pandas as pd
 
+from umutextstats.dimensions.mixins import TextComputeMixin
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
@@ -8,7 +9,7 @@ from umutextstats.text.syllables import count_syllables_text
 from umutextstats.text.tokenization import get_lexical_tokens
 
 
-class PerspicuityDimension(ScalarInspectableDimension):
+class PerspicuityDimension(TextComputeMixin, ScalarInspectableDimension):
     """
     Compute the Fernández-Huerta perspicuity score.
 
@@ -21,26 +22,6 @@ class PerspicuityDimension(ScalarInspectableDimension):
         - 62.3 * (syllables / words)
         - (words / sentences)
     """
-
-    def compute_single(
-        self,
-        row: pd.Series,
-    ) -> float:
-        """
-        Compute the perspicuity score for a single row.
-        """
-        return self._compute_text(self.get_text(row))
-
-    def compute(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.Series:
-        """
-        Compute the perspicuity score for all rows.
-        """
-        return self.get_text_series(df).apply(
-            self._compute_text
-        )
 
     def _compute_text(
         self,

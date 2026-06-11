@@ -1,5 +1,6 @@
 import pandas as pd
 
+from umutextstats.dimensions.mixins import TextComputeMixin
 from umutextstats.config.params import param
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
@@ -11,7 +12,7 @@ from umutextstats.text.patterns import (
 )
 
 
-class WordCase(ScalarInspectableDimension):
+class WordCase(TextComputeMixin, ScalarInspectableDimension):
     """
     Compute the percentage of words matching a casing rule.
 
@@ -47,28 +48,6 @@ class WordCase(ScalarInspectableDimension):
                 or "upper"
             ),
             input_column=input_column,
-        )
-
-    def compute_single(
-        self,
-        row: pd.Series,
-    ) -> float:
-        """
-        Compute the casing percentage for a single row.
-        """
-        return self._compute_text(
-            self.get_text(row)
-        )
-
-    def compute(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.Series:
-        """
-        Compute the casing percentage for all rows.
-        """
-        return self.get_text_series(df).apply(
-            self._compute_text
         )
 
     def _compute_text(

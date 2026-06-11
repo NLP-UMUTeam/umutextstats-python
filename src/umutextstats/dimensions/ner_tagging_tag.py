@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from umutextstats.dimensions.mixins import TextComputeMixin
 from umutextstats.config.params import param
 from umutextstats.inspection.iterable_inspectable_dimension import (
     IterableInspectableDimension,
@@ -36,7 +37,7 @@ class NERMatch:
         return self.end_pos
 
 
-class NERTaggingTag(IterableInspectableDimension):
+class NERTaggingTag(TextComputeMixin, IterableInspectableDimension):
     """
     Compute the percentage of NER entities matching a configured tag.
 
@@ -68,38 +69,12 @@ class NERTaggingTag(IterableInspectableDimension):
         return cls(
             key=dimension.key,
             tag=param(dimension, "tag"),
-            input_column=param(
-                dimension,
-                "input_column",
-                input_column,
-            ),
+            input_column=input_column,
             normalizer=param(
                 dimension,
                 "normalizer",
                 NER_NORMALIZER_ENTITIES,
             ),
-        )
-
-    def compute_single(
-        self,
-        row: pd.Series,
-    ) -> float:
-        """
-        Compute the NER tag percentage for a single row.
-        """
-        return self._compute_text(
-            self.get_text(row)
-        )
-
-    def compute(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.Series:
-        """
-        Compute the NER tag percentage for all rows.
-        """
-        return self.get_text_series(df).apply(
-            self._compute_text
         )
 
     def iter_matches(

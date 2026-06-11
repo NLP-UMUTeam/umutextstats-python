@@ -1,5 +1,6 @@
 import pandas as pd
 
+from umutextstats.dimensions.mixins import TextComputeMixin
 from umutextstats.config.params import param
 from umutextstats.inspection.iterable_inspectable_dimension import (
     IterableInspectableDimension,
@@ -12,7 +13,7 @@ from umutextstats.text.pos import (
 )
 
 
-class POSTaggingTag(IterableInspectableDimension):
+class POSTaggingTag(TextComputeMixin, IterableInspectableDimension):
     """
     Compute the percentage of POS-tagged items matching a configured
     POS tag or universal feature filter.
@@ -43,28 +44,6 @@ class POSTaggingTag(IterableInspectableDimension):
             input_column=input_column,
             postagger_tag=param(dimension, "tag"),
             postagger_universal=param(dimension, "universal"),
-        )
-
-    def compute_single(
-        self,
-        row: pd.Series,
-    ) -> float:
-        """
-        Compute the matching POS percentage for a single row.
-        """
-        return self._compute_text(
-            self.get_text(row)
-        )
-
-    def compute(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.Series:
-        """
-        Compute the matching POS percentage for all rows.
-        """
-        return self.get_text_series(df).apply(
-            self._compute_text
         )
 
     def _compute_text(

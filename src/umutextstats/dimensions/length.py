@@ -1,6 +1,7 @@
 import pandas as pd
 
 from umutextstats.config.params import param
+from umutextstats.dimensions.mixins import TextComputeMixin
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
@@ -36,30 +37,10 @@ class LengthDimension(ScalarInspectableDimension):
         return self.get_text_series(df).str.len()
 
 
-class AverageWordLengthDimension(ScalarInspectableDimension):
+class AverageWordLengthDimension(TextComputeMixin, ScalarInspectableDimension):
     """
     Compute the average length of lexical words in the configured text.
     """
-
-    def compute_single(
-        self,
-        row: pd.Series,
-    ) -> float:
-        """
-        Compute average word length for a single row.
-        """
-        return self._compute_text(self.get_text(row))
-
-    def compute(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.Series:
-        """
-        Compute average word length for all rows.
-        """
-        return self.get_text_series(df).apply(
-            self._compute_text
-        )
 
     def _compute_text(
         self,
@@ -76,7 +57,7 @@ class AverageWordLengthDimension(ScalarInspectableDimension):
         return sum(len(word) for word in words) / len(words)
 
 
-class WordLengthDimension(ScalarInspectableDimension):
+class WordLengthDimension(TextComputeMixin, ScalarInspectableDimension):
     """
     Count or compute the percentage of words whose length matches a condition.
 
@@ -120,26 +101,6 @@ class WordLengthDimension(ScalarInspectableDimension):
             comparator=param(dimension, "comparator", "="),
             input_column=input_column,
             percentage=percentage,
-        )
-
-    def compute_single(
-        self,
-        row: pd.Series,
-    ) -> float:
-        """
-        Compute the word-length score for a single row.
-        """
-        return self._compute_text(self.get_text(row))
-
-    def compute(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.Series:
-        """
-        Compute the word-length score for all rows.
-        """
-        return self.get_text_series(df).apply(
-            self._compute_text
         )
 
     def _compare(

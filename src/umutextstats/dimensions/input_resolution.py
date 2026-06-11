@@ -3,9 +3,7 @@
 from typing import Any
 
 
-def get_explicit_input_column(
-    dimension: Any,
-) -> str | None:
+def get_explicit_input_column(dimension):
     input_column = getattr(dimension, "input_column", None)
 
     if input_column:

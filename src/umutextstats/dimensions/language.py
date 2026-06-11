@@ -5,9 +5,9 @@ from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
 from umutextstats.utils.fasttext_loader import FastTextLoader
+from umutextstats.dimensions.mixins import TextComputeMixin
 
-
-class LanguageDimension(ScalarInspectableDimension):
+class LanguageDimension(TextComputeMixin, ScalarInspectableDimension):
     def __init__(
         self,
         key: str,
@@ -31,27 +31,6 @@ class LanguageDimension(ScalarInspectableDimension):
             language=param(dimension, "language", ""),
             input_column=input_column,
         )
-
-    def compute_single(
-        self,
-        row: pd.Series,
-    ) -> float | str:
-        if self.model is None:
-            return self.missing_value
-
-        return self._compute_text(self.get_text(row))
-
-    def compute(
-        self,
-        df: pd.DataFrame,
-    ) -> pd.Series:
-        if self.model is None:
-            return pd.Series(
-                [self.missing_value] * len(df),
-                index=df.index,
-            )
-
-        return self.get_text_series(df).apply(self._compute_text)
 
     def _compute_text(
         self,

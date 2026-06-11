@@ -1,21 +1,39 @@
 from __future__ import annotations
 
+import pandas as pd
+
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.models import DimensionInspection
 
 
 class ScalarInspectableDimension(BaseDimension):
     """
-    Base class for dimensions whose inspection is simply
-    the scalar value returned by compute_single().
+    Base class for dimensions whose inspection is simply the scalar value
+    returned by `compute_single()`.
+
+    This class is intended for dimensions that do not produce iterable
+    matches, highlights, or discarded matches.
     """
 
     def inspect(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> DimensionInspection:
-        value = self.compute_single(item)
+        """
+        Build an inspection object for a single DataFrame row.
+
+        Parameters
+        ----------
+        row:
+            Input row represented as a pandas Series.
+
+        Returns
+        -------
+        DimensionInspection
+            Inspection object containing the computed scalar value
+            as debug information.
+        """
+        value = self.compute_single(row)
 
         return DimensionInspection(
             key=self.key,

@@ -1,17 +1,19 @@
 from pathlib import Path
 
-import yaml
 import argparse
 import pandas as pd
+import yaml
 
 from rich.console import Console
 from rich.table import Table
 
-from umutextstats.dimensions.factory import build_runtime_dimension
-from umutextstats.dimensions.input_resolution import resolve_dimension_input
-from umutextstats.io.text import ensure_text
 from umutextstats.config.inspect import inspect_dimension_text
 from umutextstats.config.loader import load_config
+from umutextstats.dimensions.factory import build_runtime_dimension
+from umutextstats.io.text import ensure_text
+
+
+console = Console()
 
 
 def parse_args():
@@ -22,8 +24,6 @@ def parse_args():
         help="Validate only dimensions whose key starts with this prefix.",
     )
     return parser.parse_args()
-
-    
 
 
 def default_cases_path_for_key(key: str) -> Path:
@@ -49,6 +49,12 @@ def iter_dimensions(dimensions, root: Path):
 
 
 def build_case_row(case):
+    """
+    Build a single-row runtime context for a feature case.
+
+    The row mirrors the DataFrame columns used by dimensions:
+    raw text, normalized text, and any annotation columns.
+    """
     text = ensure_text(case.get("text", ""))
     annotations = case.get("annotations") or {}
 
@@ -60,23 +66,18 @@ def build_case_row(case):
     }
 
 
-def dimension_requires_tagged_pos(dimension):
-    if dimension.class_name == "POSTaggingTag":
-        return True
+def compute_dimension_case(dimension, row):
+    runtime_dimension = build_runtime_dimension(dimension)
 
-    if dimension.class_name in {"WordPerDictionary", "VerbPerDictionary"}:
-        return bool(
-            getattr(dimension, "pos_tag", None)
-            or dimension.params.get("pos_tag")
+    if runtime_dimension is None:
+        raise ValueError(
+            f"Could not build runtime dimension: {dimension.key}"
         )
 
-    if dimension.children:
-        return all(dimension_requires_tagged_pos(child) for child in dimension.children)
+    df = pd.DataFrame([row])
+    result = runtime_dimension.compute(df)
 
-    return False
-
-
-console = Console()
+    return result.iloc[0] if hasattr(result, "iloc") else result[0]
 
 
 def print_stats_table(stats):
@@ -104,17 +105,27 @@ def print_stats_table(stats):
     console.print(table)
 
 
-def compute_dimension_case(dimension, row):
-    runtime_dimension = build_runtime_dimension(dimension)
+def load_cases(full_cases_path: Path) -> list[dict]:
+    data = yaml.safe_load(
+        full_cases_path.read_text(encoding="utf-8")
+    ) or {}
 
-    df = pd.DataFrame([row])
-    result = runtime_dimension.compute(df)
-    return result.iloc[0] if hasattr(result, "iloc") else result[0]
+    return data.get("cases", [])
 
+
+def inspect_failed_case(config, dimension, case, row):
+    text = ensure_text(case.get("text", ""))
+    annotations = case.get("annotations") or {}
+
+    return inspect_dimension_text(
+        config=config,
+        key=dimension.key,
+        text=text,
+        annotations=annotations,
+    )
 
 
 def main():
-
     args = parse_args()
 
     config = load_config()
@@ -126,63 +137,43 @@ def main():
     failures = []
     stats = []
 
-
-    for dimension, cases_path, source in iter_dimensions(config.dimensions, root):
+    for dimension, cases_path, source in iter_dimensions(
+        config.dimensions,
+        root,
+    ):
         if args.only and not dimension.key.startswith(args.only):
             continue
-        
+
         if dimension.children:
             continue
 
         total_dimensions += 1
 
         full_cases_path = root / cases_path
-
-
-        if not full_cases_path.exists():
-            if source == "missing":
-                continue
-
-            failed += 1
-            failures.append(
-                f"{dimension.key}: cases file does not exist: {full_cases_path}"
-            )
-            stats.append(
-                {
-                    "dimension": dimension.key,
-                    "file": str(cases_path),
-                    "cases": 0,
-                    "passed": passed,
-                    "failed": failed,
-                }
-            )
-            continue
-
-        covered_dimensions += 1
         passed = 0
         failed = 0
 
         if not full_cases_path.exists():
-            failed += 1
-            failures.append(
-                f"{dimension.key}: cases file does not exist: {full_cases_path}"
-            )
-            stats.append(
-                {
-                    "dimension": dimension.key,
-                    "file": str(cases_path),
-                    "cases": 0,
-                    "passed": passed,
-                    "failed": failed,
-                }
-            )
+            if source != "missing":
+                failed += 1
+                failures.append(
+                    f"{dimension.key}: cases file does not exist: "
+                    f"{full_cases_path}"
+                )
+                stats.append(
+                    {
+                        "dimension": dimension.key,
+                        "file": str(cases_path),
+                        "cases": 0,
+                        "passed": passed,
+                        "failed": failed,
+                    }
+                )
+
             continue
 
-        data = yaml.safe_load(
-            full_cases_path.read_text(encoding="utf-8")
-        ) or {}
-
-        cases = data.get("cases", [])
+        covered_dimensions += 1
+        cases = load_cases(full_cases_path)
 
         if not cases:
             failed += 1
@@ -221,20 +212,20 @@ def main():
                 case_failed = True
 
             if case_failed:
-                inspection_text = resolve_dimension_input(dimension, row)
-
-                inspection = inspect_dimension_text(
+                inspection = inspect_failed_case(
                     config=config,
-                    key=dimension.key,
-                    text=inspection_text,
-                    annotations=case.get("annotations"),
+                    dimension=dimension,
+                    case=case,
+                    row=row,
                 )
 
                 failures.append(
-                    f"{dimension.key}[{i}]: expected {case.get('expected', case.get('expected_min'))}, "
-                    f"got {value}. Text: {case['text']!r}. "
+                    f"{dimension.key}[{i}]: expected "
+                    f"{case.get('expected', case.get('expected_min'))}, "
+                    f"got {value}. Text: {case.get('text', '')!r}. "
                     f"Matches: {[m.match for m in inspection.matches]}. "
-                    f"Discarded: {[m.match for m in inspection.discarded_matches]}"
+                    f"Discarded: "
+                    f"{[m.match for m in inspection.discarded_matches]}"
                 )
 
                 failed += 1
@@ -253,11 +244,22 @@ def main():
 
     print(f"Validated feature cases: {total_cases}")
     print_stats_table(stats)
-    print(f"Covered dimensions: {covered_dimensions} / {total_dimensions} ({covered_dimensions / total_dimensions:.1%})")
+
+    coverage = (
+        covered_dimensions / total_dimensions
+        if total_dimensions
+        else 0.0
+    )
+
+    print(
+        f"Covered dimensions: {covered_dimensions} / "
+        f"{total_dimensions} ({coverage:.1%})"
+    )
 
     if failures:
         print("")
         print("Failures:")
+
         for failure in failures:
             print(f"- {failure}")
 
@@ -265,9 +267,6 @@ def main():
 
     print("")
     print("All feature cases passed.")
-
-
-
 
 
 if __name__ == "__main__":

@@ -1,17 +1,28 @@
 from __future__ import annotations
 
+import pandas as pd
+
 from umutextstats.config.params import param
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
 from umutextstats.text.patterns import (
-    POS_ITEM_REGEX,
     DEPENDENCY_ITEM_REGEX,
+    POS_ITEM_REGEX,
 )
 
 
 class RootPOSTagDimension(ScalarInspectableDimension):
+    """
+    Compute the percentage of dependency roots whose POS tag matches
+    a configured tag.
+
+    This dimension needs two annotation columns:
+
+    - `input_column`: POS-tagged text, usually "tagged_pos".
+    - `tagged_dep_column`: dependency-tagged text, usually "tagged_dep".
+    """
+
     def __init__(
         self,
         key: str,
@@ -31,7 +42,7 @@ class RootPOSTagDimension(ScalarInspectableDimension):
     ):
         return cls(
             key=dimension.key,
-            input_column="tagged_pos",
+            input_column=input_column,
             tagged_dep_column=param(
                 dimension,
                 "tagged_dep_column",
@@ -42,26 +53,45 @@ class RootPOSTagDimension(ScalarInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        tagged_pos = self.get_text(item)
+        """
+        Compute the root POS tag percentage for a single row.
+        """
+        tagged_pos = self.get_text(row)
 
-        tagged_dep = (
-            item.get_annotation(self.tagged_dep_column)
-            or item.get(self.tagged_dep_column, "")
+        tagged_dep = self.get_text(
+            row=row,
+            column=self.tagged_dep_column,
         )
 
         return self._compute_text(
-            tagged_pos=str(tagged_pos),
-            tagged_dep=str(tagged_dep),
+            tagged_pos=tagged_pos,
+            tagged_dep=tagged_dep,
         )
 
-    def compute(self, df):
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the root POS tag percentage for all rows.
+        """
         return df.apply(self._compute_row, axis=1)
 
-    def _compute_row(self, row) -> float:
-        tagged_pos = str(row.get(self.input_column, "") or "")
-        tagged_dep = str(row.get(self.tagged_dep_column, "") or "")
+    def _compute_row(
+        self,
+        row: pd.Series,
+    ) -> float:
+        """
+        Compute the dimension from a DataFrame row.
+        """
+        tagged_pos = self.get_text(row)
+
+        tagged_dep = self.get_text(
+            row=row,
+            column=self.tagged_dep_column,
+        )
 
         return self._compute_text(
             tagged_pos=tagged_pos,
@@ -73,6 +103,9 @@ class RootPOSTagDimension(ScalarInspectableDimension):
         tagged_pos: str,
         tagged_dep: str,
     ) -> float:
+        """
+        Compute the percentage of dependency roots matching the target POS tag.
+        """
         pos_sentences = self._split_sentences(tagged_pos)
         dep_sentences = self._split_sentences(tagged_dep)
 
@@ -116,6 +149,9 @@ class RootPOSTagDimension(ScalarInspectableDimension):
         self,
         tagged_text: str,
     ) -> list[str]:
+        """
+        Split tagged text into sentence chunks.
+        """
         if not tagged_text:
             return []
 
@@ -129,6 +165,9 @@ class RootPOSTagDimension(ScalarInspectableDimension):
         self,
         sentence: str,
     ) -> list[dict[str, str]]:
+        """
+        Parse a POS-tagged sentence into token dictionaries.
+        """
         items = []
 
         for raw_item in sentence.split(", "):
@@ -151,6 +190,9 @@ class RootPOSTagDimension(ScalarInspectableDimension):
         self,
         sentence: str,
     ) -> list[dict[str, str | int]]:
+        """
+        Parse a dependency-tagged sentence into token dictionaries.
+        """
         items = []
 
         for raw_item in sentence.split(", "):
@@ -175,6 +217,9 @@ class RootPOSTagDimension(ScalarInspectableDimension):
         return items
 
     def inspection_debug_text(self) -> str:
+        """
+        Return configuration details used during inspection.
+        """
         return (
             f"Root POS tag filter: {self.tag}\n"
             f"POS column: {self.input_column}\n"

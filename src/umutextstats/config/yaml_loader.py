@@ -20,17 +20,18 @@ KNOWN_FIELDS = {
     "universal",
     "pos_tag",
     "pos_input_column",
-    "use_original_input",
-    "useoriginalinput",
+    "input_column",
     "percentage",
     "disabled_regexp",
-    "disabledregexp",
     "children",
     "dimensions",
 }
 
 
 def _as_bool(value: Any, default: bool = False) -> bool:
+    """
+    Convert common YAML scalar values to booleans.
+    """
     if value is None:
         return default
 
@@ -44,6 +45,12 @@ def _as_bool(value: Any, default: bool = False) -> bool:
 
 
 def _load_dimension(data: dict[str, Any]) -> DimensionConfig:
+    """
+    Load a single dimension configuration from YAML data.
+
+    Unknown keys are preserved in `params`, while known top-level fields
+    are mapped directly to DimensionConfig.
+    """
     children_data = data.get("children", data.get("dimensions", []))
 
     params = {
@@ -51,6 +58,7 @@ def _load_dimension(data: dict[str, Any]) -> DimensionConfig:
         for key, value in data.items()
         if key not in KNOWN_FIELDS
     }
+
 
     return DimensionConfig(
         key=data["key"],
@@ -62,16 +70,10 @@ def _load_dimension(data: dict[str, Any]) -> DimensionConfig:
         universal=data.get("universal"),
         pos_tag=data.get("pos_tag"),
         pos_input_column=data.get("pos_input_column", "tagged_pos"),
+        input_column=data.get("input_column"),
         validation=data.get("validation"),
-        use_original_input=_as_bool(
-            data.get("use_original_input", data.get("useoriginalinput")),
-            default=False,
-        ),
         percentage=_as_bool(data.get("percentage"), default=True),
-        disabled_regexp=_as_bool(
-            data.get("disabled_regexp", data.get("disabledregexp")),
-            default=False,
-        ),
+        disabled_regexp=_as_bool(data.get("disabled_regexp", False)),
         children=[
             _load_dimension(child)
             for child in children_data
@@ -79,7 +81,13 @@ def _load_dimension(data: dict[str, Any]) -> DimensionConfig:
         params=params,
     )
 
+
 def load_yaml_config(path: str | Path) -> UMUTextStatsConfig:
+    """
+    Load a UMUTextStats YAML configuration file.
+
+    Included files are resolved relative to the main configuration file.
+    """
     path = Path(path)
 
     with path.open("r", encoding="utf-8") as file:

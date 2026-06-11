@@ -95,24 +95,50 @@ def test_explanation_to_dict_includes_parent_and_children_count():
     assert data["parameters"] == {"tag": "PRON"}
 
 
-def test_render_dimension_explanation_includes_parent_and_children_count():
+def test_explanation_to_dict_includes_parent_and_children_count():
     config = UMUTextStatsConfig(
         dimensions=[
             DimensionConfig(
                 key="parent",
                 children=[
-                    DimensionConfig(key="child")
+                    DimensionConfig(
+                        key="child",
+                        class_name="POSTaggingTag",
+                        params={"tag": "PRON"},
+                    )
                 ],
             )
         ]
     )
 
-    explanation = find_dimension(config, "parent")
+    explanation = find_dimension(config, "child")
 
     assert explanation is not None
 
-    text = render_dimension_explanation(explanation)
+    data = explanation_to_dict(explanation)
 
-    assert "Children count: 1" in text
-    assert "Children:" in text
-    assert "- child" in text
+    assert data["key"] == "child"
+    assert data["path"] == ["parent", "child"]
+    assert data["parent"] == "parent"
+    assert data["children_count"] == 0
+    assert data["children"] == []
+    assert data["parameters"]["tag"] == "PRON"
+
+def test_explanation_to_dict_includes_input_column_when_configured():
+    config = UMUTextStatsConfig(
+        dimensions=[
+            DimensionConfig(
+                key="x",
+                class_name="PatternDimension",
+                input_column="text_raw",
+            )
+        ]
+    )
+
+    explanation = find_dimension(config, "x")
+
+    assert explanation is not None
+
+    data = explanation_to_dict(explanation)
+
+    assert data["parameters"]["input_column"] == "text_raw"

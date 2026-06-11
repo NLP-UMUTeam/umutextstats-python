@@ -4,23 +4,28 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
+import pandas as pd
 from spylls.hunspell import Dictionary
 
-from umutextstats.dimensions.dimension_input import DimensionInput
-from umutextstats.inspection.scalar_inspectable_dimension import ScalarInspectableDimension
-from umutextstats.inspection.iterable_inspectable_dimension import IterableInspectableDimension
 from umutextstats.dimensions.enclitics_personal_pronouns import remove_accents
-from umutextstats.text.tokenization import get_lexical_tokens
-from umutextstats.utils.accent_map import load_accent_map
-from umutextstats.text.sentence import get_sentences
+from umutextstats.inspection.iterable_inspectable_dimension import (
+    IterableInspectableDimension,
+)
+from umutextstats.inspection.scalar_inspectable_dimension import (
+    ScalarInspectableDimension,
+)
 from umutextstats.text.patterns import (
+    INITIAL_TOKEN_EXCLUSING_NUMBERS_REGEX,
+    INITIAL_TOKEN_REGEX,
+    MENTION_REGEX,
     REPEATED_WORD_REGEX,
     SENTENCE_SPAN_REGEX,
-    MENTION_REGEX,
-    INITIAL_TOKEN_REGEX,
-    INITIAL_TOKEN_EXCLUSING_NUMBERS_REGEX,
-    WORD_RE
+    WORD_RE,
 )
+from umutextstats.text.sentence import get_sentences
+from umutextstats.text.tokenization import get_lexical_tokens
+from umutextstats.utils.accent_map import load_accent_map
+
 
 AMBIGUOUS_DIACRITIC_WORDS = {
     "el", "tu", "mi", "si", "se", "te", "de",
@@ -58,16 +63,17 @@ class ErrorCapitalizationStartingWithLowerCaseDimension(
     ):
         super().__init__(key=key, input_column=input_column)
 
-    def compute_single(self, item: DimensionInput) -> float:
-        return self._compute_text(self.get_text(item))
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float:
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
     def iter_sentences(self, text: str):
         text = "" if text is None else str(text)
@@ -140,16 +146,17 @@ class ErrorMispellingAccentsDimension(IterableInspectableDimension):
             path=accent_map_path,
         )
 
-    def compute_single(self, item: DimensionInput) -> float:
-        return self._compute_text(self.get_text(item))
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float:
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
     def iter_matches(self, text: str):
         for match in WORD_RE.finditer("" if text is None else str(text)):
@@ -176,7 +183,6 @@ class ErrorMispellingAccentsDimension(IterableInspectableDimension):
         return (100 * occurrences) / len(words)
 
     def _is_accent_error(self, word: str) -> bool:
-
         if word in AMBIGUOUS_DIACRITIC_WORDS:
             return False
 
@@ -210,22 +216,26 @@ class ErrorMispellingDimension(IterableInspectableDimension):
         if aff_path.exists() and dic_path.exists():
             self.dictionary = Dictionary.from_files(dictionary_path)
 
-    def compute_single(self, item: DimensionInput) -> float:
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float | str:
         if self.dictionary is None:
             return self.missing_value
 
-        return self._compute_text(self.get_text(item))
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
         if self.dictionary is None:
-            return [self.missing_value] * len(df)
+            return pd.Series(
+                [self.missing_value] * len(df),
+                index=df.index,
+            )
 
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+        return self.get_text_series(df).apply(self._compute_text)
 
     def iter_matches(self, text: str):
         text = "" if text is None else str(text)
@@ -265,7 +275,11 @@ class ErrorMispellingDimension(IterableInspectableDimension):
 
         return (100 * errors) / checked
 
-    def _should_check_word(self, word: str, word_norm: str) -> bool:
+    def _should_check_word(
+        self,
+        word: str,
+        word_norm: str,
+    ) -> bool:
         if not word:
             return False
 
@@ -278,12 +292,18 @@ class ErrorMispellingDimension(IterableInspectableDimension):
         if word.isupper() and len(word) > 1:
             return False
 
-        if any(c.islower() for c in word) and any(c.isupper() for c in word[1:]):
+        if any(c.islower() for c in word) and any(
+            c.isupper()
+            for c in word[1:]
+        ):
             return False
 
         return True
 
-    def _is_known(self, word_norm: str) -> bool:
+    def _is_known(
+        self,
+        word_norm: str,
+    ) -> bool:
         if word_norm not in self._known_cache:
             self._known_cache[word_norm] = self.dictionary.lookup(word_norm)
 
@@ -291,18 +311,22 @@ class ErrorMispellingDimension(IterableInspectableDimension):
 
 
 class ErrorMiscTwoOrMoreEqualWordsDimension(ScalarInspectableDimension):
-    def compute_single(self, item: DimensionInput) -> int:
-        return self._compute_text(self.get_text(item))
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> int:
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
-    def _compute_text(self, text: str) -> int:
+    def _compute_text(
+        self,
+        text: str,
+    ) -> int:
         sentences = get_sentences(text)
 
         if not sentences:
@@ -313,7 +337,10 @@ class ErrorMiscTwoOrMoreEqualWordsDimension(ScalarInspectableDimension):
             for sentence in sentences
         )
 
-    def _count_repeated_words(self, sentence: str) -> int:
+    def _count_repeated_words(
+        self,
+        sentence: str,
+    ) -> int:
         return sum(
             1
             for _ in REPEATED_WORD_REGEX.finditer(sentence)
@@ -328,16 +355,17 @@ class ErrorStyleSentencesStartingWithNumbers(IterableInspectableDimension):
     ):
         super().__init__(key=key, input_column=input_column)
 
-    def compute_single(self, item: DimensionInput) -> float:
-        return self._compute_text(self.get_text(item))
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float:
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
     def iter_matches(self, text: str):
         for match in SENTENCE_SPAN_REGEX.finditer(text):
@@ -349,7 +377,10 @@ class ErrorStyleSentencesStartingWithNumbers(IterableInspectableDimension):
             if self._starts_with_number(sentence):
                 yield SimpleMatch(sentence, match.start(), match.end())
 
-    def _compute_text(self, text: str) -> float:
+    def _compute_text(
+        self,
+        text: str,
+    ) -> float:
         sentences = self._split_sentences(text)
 
         if not sentences:
@@ -363,7 +394,10 @@ class ErrorStyleSentencesStartingWithNumbers(IterableInspectableDimension):
 
         return (100 * occurrences) / len(sentences)
 
-    def _split_sentences(self, text: str) -> list[str]:
+    def _split_sentences(
+        self,
+        text: str,
+    ) -> list[str]:
         sentences = []
 
         for match in SENTENCE_SPAN_REGEX.finditer(text):
@@ -379,7 +413,10 @@ class ErrorStyleSentencesStartingWithNumbers(IterableInspectableDimension):
 
         return sentences
 
-    def _starts_with_number(self, sentence: str) -> bool:
+    def _starts_with_number(
+        self,
+        sentence: str,
+    ) -> bool:
         match = INITIAL_TOKEN_REGEX.search(sentence)
 
         if not match:
@@ -396,18 +433,22 @@ class ErrorStyleSentencesStartingWithTheSameWord(ScalarInspectableDimension):
     ):
         super().__init__(key=key, input_column=input_column)
 
-    def compute_single(self, item: DimensionInput) -> float:
-        return self._compute_text(self.get_text(item))
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float:
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
-    def _compute_text(self, text: str) -> float:
+    def _compute_text(
+        self,
+        text: str,
+    ) -> float:
         sentences = self._split_sentences(text)
 
         if not sentences:
@@ -429,7 +470,10 @@ class ErrorStyleSentencesStartingWithTheSameWord(ScalarInspectableDimension):
 
         return (100 * occurrences) / len(sentences)
 
-    def _split_sentences(self, text: str) -> list[str]:
+    def _split_sentences(
+        self,
+        text: str,
+    ) -> list[str]:
         sentences = []
 
         for match in SENTENCE_SPAN_REGEX.finditer(text):
@@ -445,7 +489,10 @@ class ErrorStyleSentencesStartingWithTheSameWord(ScalarInspectableDimension):
 
         return sentences
 
-    def _first_word(self, sentence: str) -> str | None:
+    def _first_word(
+        self,
+        sentence: str,
+    ) -> str | None:
         match = INITIAL_TOKEN_EXCLUSING_NUMBERS_REGEX.search(sentence)
 
         if not match:

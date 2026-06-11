@@ -4,11 +4,20 @@ import pandas as pd
 
 from umutextstats.config.params import param, split_param_list
 from umutextstats.dimensions.base import BaseDimension
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.models import DimensionInspection
 
 
 class RatioDimension(BaseDimension):
+    """
+    Dimension computed as a scaled ratio between previously computed columns.
+
+    This dimension usually works on the output data produced by other
+    dimensions, through `compute_from_data(data, n_rows)`.
+
+    It can also operate directly on an input DataFrame if the numerator
+    and denominator columns already exist in that DataFrame.
+    """
+
     def __init__(
         self,
         key: str,
@@ -45,7 +54,13 @@ class RatioDimension(BaseDimension):
             ),
         )
 
-    def compute(self, df):
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the ratio from columns already present in a DataFrame.
+        """
         return self.compute_from_data(
             data={column: df[column] for column in df.columns},
             n_rows=len(df),
@@ -56,18 +71,9 @@ class RatioDimension(BaseDimension):
         data: dict[str, pd.Series],
         n_rows: int,
     ) -> pd.Series:
-        numerator = self._sum_data_keys(
-            data=data,
-            keys=self.numerator,
-            n_rows=n_rows,
-        )
-
-        denominator = self._sum_data_keys(
-            data=data,
-            keys=self.denominator,
-            n_rows=n_rows,
-        )
-
+        """
+        Compute the ratio from already computed dimension outputs.
+        """
         missing = [
             key
             for key in self.numerator + self.denominator
@@ -80,6 +86,18 @@ class RatioDimension(BaseDimension):
                 f"{', '.join(missing)}"
             )
 
+        numerator = self._sum_data_keys(
+            data=data,
+            keys=self.numerator,
+            n_rows=n_rows,
+        )
+
+        denominator = self._sum_data_keys(
+            data=data,
+            keys=self.denominator,
+            n_rows=n_rows,
+        )
+
         result = numerator / denominator.replace(0, pd.NA)
 
         result = (
@@ -91,10 +109,13 @@ class RatioDimension(BaseDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        numerator = self._sum_item_keys(item, self.numerator)
-        denominator = self._sum_item_keys(item, self.denominator)
+        """
+        Compute the ratio for a single row.
+        """
+        numerator = self._sum_row_keys(row, self.numerator)
+        denominator = self._sum_row_keys(row, self.denominator)
 
         return self._safe_ratio(
             numerator=numerator,
@@ -103,10 +124,13 @@ class RatioDimension(BaseDimension):
 
     def inspect(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> DimensionInspection:
-        numerator = self._sum_item_keys(item, self.numerator)
-        denominator = self._sum_item_keys(item, self.denominator)
+        """
+        Inspect the ratio computation for a single row.
+        """
+        numerator = self._sum_row_keys(row, self.numerator)
+        denominator = self._sum_row_keys(row, self.denominator)
 
         value = self._safe_ratio(
             numerator=numerator,
@@ -136,6 +160,9 @@ class RatioDimension(BaseDimension):
         numerator: float,
         denominator: float,
     ) -> float:
+        """
+        Compute a safe scaled ratio for scalar values.
+        """
         if denominator == 0:
             return self.zero_division
 
@@ -147,15 +174,15 @@ class RatioDimension(BaseDimension):
         keys: list[str],
         n_rows: int,
     ) -> pd.Series:
+        """
+        Sum several Series from a data dictionary.
+        """
         if not keys:
             return pd.Series([0.0] * n_rows)
 
         frame = pd.DataFrame(
             {
-                key: data.get(
-                    key,
-                    pd.Series([0.0] * n_rows),
-                )
+                key: data[key]
                 for key in keys
             }
         )
@@ -167,16 +194,21 @@ class RatioDimension(BaseDimension):
             .sum(axis=1)
         )
 
-    def _sum_item_keys(
+    def _sum_row_keys(
         self,
-        item: DimensionInput,
+        row: pd.Series,
         keys: list[str],
     ) -> float:
+        """
+        Sum several numeric values from a single row.
+        """
         total = 0.0
 
         for key in keys:
+            value = row.get(key, 0)
+
             try:
-                total += float(item.get(key, 0) or 0)
+                total += float(value or 0)
             except (TypeError, ValueError):
                 continue
 
@@ -186,6 +218,9 @@ class RatioDimension(BaseDimension):
         self,
         value: list[str] | str,
     ) -> list[str]:
+        """
+        Normalize a string or list parameter into a list of strings.
+        """
         if isinstance(value, list):
             return value
 
@@ -195,4 +230,7 @@ class RatioDimension(BaseDimension):
         self,
         keys: list[str],
     ) -> str:
+        """
+        Format column names for inspection debug output.
+        """
         return " + ".join(keys) if keys else "0"

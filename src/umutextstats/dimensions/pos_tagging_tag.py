@@ -1,5 +1,6 @@
+import pandas as pd
+
 from umutextstats.config.params import param
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.iterable_inspectable_dimension import (
     IterableInspectableDimension,
 )
@@ -12,6 +13,11 @@ from umutextstats.text.pos import (
 
 
 class POSTaggingTag(IterableInspectableDimension):
+    """
+    Compute the percentage of POS-tagged items matching a configured
+    POS tag or universal feature filter.
+    """
+
     def __init__(
         self,
         key: str,
@@ -29,28 +35,45 @@ class POSTaggingTag(IterableInspectableDimension):
         dimension,
         input_column: str = "tagged_pos",
     ):
+        """
+        Build the dimension from configuration.
+        """
         return cls(
             key=dimension.key,
-            input_column="tagged_pos",
+            input_column=input_column,
             postagger_tag=param(dimension, "tag"),
             postagger_universal=param(dimension, "universal"),
         )
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._compute_text(self.get_text(item))
-
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
+        """
+        Compute the matching POS percentage for a single row.
+        """
+        return self._compute_text(
+            self.get_text(row)
         )
 
-    def _compute_text(self, tagged_text: str) -> float:
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the matching POS percentage for all rows.
+        """
+        return self.get_text_series(df).apply(
+            self._compute_text
+        )
+
+    def _compute_text(
+        self,
+        tagged_text: str,
+    ) -> float:
+        """
+        Compute the percentage of POS items matching the configured filters.
+        """
         items = parse_tagged_pos(tagged_text)
 
         if not items:
@@ -64,7 +87,13 @@ class POSTaggingTag(IterableInspectableDimension):
 
         return (100 * matches) / len(items)
 
-    def iter_matches(self, tagged_text: str):
+    def iter_matches(
+        self,
+        tagged_text: str,
+    ):
+        """
+        Yield POS matches for inspection.
+        """
         for item in parse_tagged_pos_with_offsets(tagged_text):
             if self._matches(item):
                 yield _POSMatch(item)
@@ -73,6 +102,9 @@ class POSTaggingTag(IterableInspectableDimension):
         self,
         item: POSItem,
     ) -> bool:
+        """
+        Check whether a POS item matches the configured filters.
+        """
         return pos_item_matches(
             item=item,
             tag=self.postagger_tag,
@@ -80,6 +112,9 @@ class POSTaggingTag(IterableInspectableDimension):
         )
 
     def inspection_debug_text(self) -> str:
+        """
+        Return configuration details used during inspection.
+        """
         parts = []
 
         if self.postagger_tag:
@@ -92,6 +127,10 @@ class POSTaggingTag(IterableInspectableDimension):
 
 
 class _POSMatch:
+    """
+    Regex-like wrapper around a POSItem for inspection rendering.
+    """
+
     def __init__(
         self,
         item: POSItem,

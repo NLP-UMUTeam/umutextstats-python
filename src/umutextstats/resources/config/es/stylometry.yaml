@@ -169,7 +169,7 @@ dimensions:
       class: PatternDimension
       description: Percentage of ellipsis
       pattern: '…|\.{3,}'
-      use_original_input: true
+      input_column: text_raw
       separator: by-spaces
     - key: stylometry-punctuation-open-question
       class: CharacterFrequencyDimension

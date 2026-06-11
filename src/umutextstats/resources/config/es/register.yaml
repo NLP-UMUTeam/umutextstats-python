@@ -40,7 +40,7 @@ dimensions:
       class: WordPerDictionary
       description: Percentage of informal speech with a style of short messages on the Internet
       dictionary: sms
-      use_original_input: true
+      input_column: text_raw
   - key: register-polite-language-cultisms
     class: WordPerDictionary
     description: Percentage of cultism

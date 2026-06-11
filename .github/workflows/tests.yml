@@ -26,6 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
           pip install pytest
+          pip install spylls
 
       - name: Run tests
         run: pytest -v

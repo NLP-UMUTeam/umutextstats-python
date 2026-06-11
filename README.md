@@ -16,21 +16,39 @@ This is an active migration/adaptation of UMUTextStats to Python.
 
 Current features include:
 
+### Data ingestion
 - CSV input loading
-- XML configuration loading
+- YAML-based configuration
+
+### Linguistic annotation
 - Text preprocessing
-- Cached pipeline stages
-- Common feature computation
-- Stanza POS/NER annotation
-- Dictionary-based dimensions
-- Pattern-based dimensions
-- Composite dimensions
-- Feature summarization
+- POS tagging
+- Named entity recognition (NER)
+- Dependency parsing
+- Cached annotation pipelines
+
+### Feature engineering
+- Dictionary-based features
+- Pattern-based features
+- Readability metrics
+- Lexical and morphosyntactic features
+- Composite features
+- Ratio features
+
+### Analysis
 - Feature ranking
-- Sparse/zero-only feature detection
-- Aggregate statistics by metadata groups
-- CSV/JSON output
-- Optional profiling stats
+- Feature summarization
+- Sparse feature detection
+- Group-level aggregate statistics
+
+### Outputs
+- CSV export
+- JSON export
+
+### Tooling
+- Feature inspection and explanation
+- Validation test cases
+- Optional performance profiling
 
 ---
 
@@ -61,12 +79,12 @@ umutextstats analyze dataset.csv \
   --stats stats.csv
 ```
 
-Using a custom XML configuration:
+Using a custom YAML configuration:
 
 ```bash
 umutextstats analyze dataset.csv \
   -t tweet \
-  -c path/to/config.xml \
+  -c path/to/config.yaml \
   -o features.csv
 ```
 
@@ -352,18 +370,6 @@ umutextstats cache info --cache-dir .cache_dev
 UMUTextStats uses a hierarchical configuration system to define linguistic dimensions, feature groups, dictionaries and extraction strategies.
 
 The default configuration is distributed as a YAML file, while legacy XML configurations are still supported for compatibility.
-
----
-
-## Convert configuration formats
-
-Convert XML configurations to YAML:
-
-```bash
-umutextstats config convert \
-    src/umutextstats/resources/config/default.xml \
-    default.yaml
-```
 
 ---
 

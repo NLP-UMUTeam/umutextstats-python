@@ -11,7 +11,7 @@ dimensions:
       class: PatternDimension
       description: Number of hashtags
       pattern: '(?<!\S)#[\p{L}\p{N}_]+'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: whole
 
@@ -19,7 +19,7 @@ dimensions:
       class: PatternDimension
       description: Number of user mentions
       pattern: '(?<!\S)@[\p{L}\p{N}_]+'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
 
@@ -27,7 +27,7 @@ dimensions:
       class: PatternDimension
       description: Number of mentions appearing inside the message rather than at the beginning
       pattern: '(?<!^)(\s|\A)@([\p{L}\p{N}_]+)'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: whole
 
@@ -35,7 +35,7 @@ dimensions:
       class: PatternDimension
       description: Number of cashtags referencing stocks or cryptocurrencies
       pattern: '(?<!\S)\$[A-Z]{1,5}(?![\p{L}\p{N}_])'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
 
@@ -43,7 +43,7 @@ dimensions:
       class: PatternDimension
       description: Number of online community references such as subreddit or user references
       pattern: '(?i)(?<![\p{L}\p{N}_/])(r/[\p{L}\p{N}_]+|u/[\p{L}\p{N}_]+|discord(?:\.gg|\.com/invite)?/\S+)'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
         
@@ -55,14 +55,14 @@ dimensions:
       class: PatternDimension
       description: Number of hyperlinks
       pattern: 'https?://\S+|www\.\S+'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
 
     - key: digital-linking-shortened-urls
       class: PatternDimension
       description: Number of shortened URLs
       pattern: '(?i)\b(?:bit\.ly|t\.co|goo\.gl|tinyurl\.com)/\S+'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
 
 
@@ -74,7 +74,7 @@ dimensions:
       class: PatternDimension
       description: Number of Unicode emojis and pictographic symbols
       pattern: '\p{Extended_Pictographic}'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
 
@@ -83,7 +83,7 @@ dimensions:
       description: Number of ASCII emoticons
       pattern: >-
         (?:(?<![\p{L}\p{N}_])(?:[:;=8][-o*']?[\)\(dDpP/:\}\{@\|])|(?<![\p{L}\p{N}_])[xX]D|<3)
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
 
@@ -91,7 +91,7 @@ dimensions:
       class: PatternDimension
       description: Number of Unicode flag emojis based on regional indicator symbols
       pattern: '[\U0001F1E6-\U0001F1FF]{2}'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
 
@@ -99,7 +99,7 @@ dimensions:
       class: PatternDimension
       description: Number of Unicode emoji skin tone modifiers
       pattern: '[\U0001F3FB-\U0001F3FF]'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
 
@@ -111,7 +111,7 @@ dimensions:
       class: PatternDimension
       description: Number of repost or forwarding markers
       pattern: '(?i)(?<!\p{L})(rt|via)(?!\p{L})'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
 
@@ -119,7 +119,7 @@ dimensions:
       class: PatternDimension
       description: Number of thread or chained-post markers
       pattern: '(?i)(\b\d+/\d+\b|\b(?:abro|sigo|cierro)\s+hilo\b|\bhilo\s*\d+/\d+\b|\bthread\b)'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: by-word
 
@@ -127,7 +127,7 @@ dimensions:
       class: PatternDimension
       description: Number of quoting markers in digital communication
       pattern: '(?m)^\s*>+'
-      use_original_input: true
+      input_column: text_raw
       percentage: false
       separator: whole
 
@@ -140,4 +140,4 @@ dimensions:
       class: WordPerDictionary
       description: Number of internet and platform-related jargon expressions
       dictionary: digital-platform-language-jargon
-      use_original_input: true
+      input_column: text_raw

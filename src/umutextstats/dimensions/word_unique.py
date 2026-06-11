@@ -1,5 +1,6 @@
+import pandas as pd
+
 from umutextstats.config.params import percentage_param
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
@@ -7,6 +8,10 @@ from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class WordUniqueDimension(ScalarInspectableDimension):
+    """
+    Count unique lexical words or compute their percentage over total words.
+    """
+
     def __init__(
         self,
         key: str,
@@ -22,6 +27,9 @@ class WordUniqueDimension(ScalarInspectableDimension):
         dimension,
         input_column: str = "text_norm",
     ):
+        """
+        Build the dimension from configuration.
+        """
         return cls(
             key=dimension.key,
             input_column=input_column,
@@ -30,24 +38,33 @@ class WordUniqueDimension(ScalarInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ):
+        """
+        Compute unique word count or percentage for a single row.
+        """
         return self._compute_text(
-            self.get_text(item)
+            self.get_text(row)
         )
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute unique word count or percentage for all rows.
+        """
+        return self.get_text_series(df).apply(
+            self._compute_text
         )
 
     def _compute_text(
         self,
         text: str,
     ):
+        """
+        Compute unique lexical words from plain text.
+        """
         words = get_lexical_tokens(text)
         total_words = len(words)
 
@@ -62,4 +79,7 @@ class WordUniqueDimension(ScalarInspectableDimension):
         return (100 * unique_words) / total_words
 
     def inspection_debug_text(self) -> str:
+        """
+        Return configuration details used during inspection.
+        """
         return f"Percentage: {self.percentage}"

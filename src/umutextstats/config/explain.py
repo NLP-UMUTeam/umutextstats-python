@@ -1,5 +1,3 @@
-# src/umutextstats/config/explain.py
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -10,6 +8,10 @@ from umutextstats.config.models import DimensionConfig, UMUTextStatsConfig
 
 @dataclass(frozen=True)
 class DimensionExplanation:
+    """
+    Explanation metadata for a dimension found in a configuration tree.
+    """
+
     dimension: DimensionConfig
     path: list[str]
 
@@ -18,6 +20,9 @@ def find_dimension(
     config: UMUTextStatsConfig,
     key: str,
 ) -> DimensionExplanation | None:
+    """
+    Find a dimension by key in a configuration tree.
+    """
     for dimension in config.dimensions:
         result = _find_dimension_recursive(
             dimension=dimension,
@@ -36,6 +41,9 @@ def _find_dimension_recursive(
     key: str,
     path: list[str],
 ) -> DimensionExplanation | None:
+    """
+    Recursively search for a dimension and keep track of its path.
+    """
     current_path = [*path, dimension.key]
 
     if dimension.key == key:
@@ -57,7 +65,12 @@ def _find_dimension_recursive(
     return None
 
 
-def render_dimension_explanation(explanation: DimensionExplanation) -> str:
+def render_dimension_explanation(
+    explanation: DimensionExplanation,
+) -> str:
+    """
+    Render a human-readable explanation for a dimension.
+    """
     data = explanation_to_dict(explanation)
 
     lines = [
@@ -96,23 +109,30 @@ def render_dimension_explanation(explanation: DimensionExplanation) -> str:
     return "\n".join(lines)
 
 
-def _collect_parameters(dimension: DimensionConfig) -> dict[str, Any]:
+def _collect_parameters(
+    dimension: DimensionConfig,
+) -> dict[str, Any]:
+    """
+    Collect explicit dimension parameters for explanation output.
+
+    Default values that do not add useful information are omitted.
+    `input_column` is included when explicitly configured, because it is
+    now the single source of truth for selecting raw, normalized, or
+    annotation columns.
+    """
     params: dict[str, Any] = {}
 
     known_values = {
         "dictionary": dimension.dictionary,
         "pattern": dimension.pattern,
         "universal": dimension.universal,
-        "use_original_input": dimension.use_original_input,
+        "input_column": dimension.input_column,
         "percentage": dimension.percentage,
         "disabled_regexp": dimension.disabled_regexp,
     }
 
     for key, value in known_values.items():
         if value is None:
-            continue
-
-        if key == "use_original_input" and value is False:
             continue
 
         if key == "percentage" and value is True:
@@ -128,7 +148,12 @@ def _collect_parameters(dimension: DimensionConfig) -> dict[str, Any]:
     return params
 
 
-def explanation_to_dict(explanation: DimensionExplanation) -> dict[str, Any]:
+def explanation_to_dict(
+    explanation: DimensionExplanation,
+) -> dict[str, Any]:
+    """
+    Convert a dimension explanation into a serializable dictionary.
+    """
     dimension = explanation.dimension
     parent = explanation.path[-2] if len(explanation.path) > 1 else None
 

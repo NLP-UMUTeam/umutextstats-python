@@ -2,13 +2,27 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from umutextstats.dimensions.dimension_input import DimensionInput
-from umutextstats.inspection.iterable_inspectable_dimension import IterableInspectableDimension
+import pandas as pd
+
+from umutextstats.inspection.iterable_inspectable_dimension import (
+    IterableInspectableDimension,
+)
 from umutextstats.text.patterns import DEPENDENCY_ITEM_REGEX
+
+
+PASSIVE_DEPRELS = {
+    "aux:pass",
+    "nsubj:pass",
+    "expl:pass",
+}
 
 
 @dataclass(frozen=True)
 class DependencyMatch:
+    """
+    Regex-like match object used by the inspection layer.
+    """
+
     text: str
     start_pos: int
     end_pos: int
@@ -16,6 +30,7 @@ class DependencyMatch:
     def group(self, index: int = 0) -> str:
         if index != 0:
             raise IndexError(index)
+
         return self.text
 
     def start(self) -> int:
@@ -23,14 +38,14 @@ class DependencyMatch:
 
     def end(self) -> int:
         return self.end_pos
-    
-PASSIVE_DEPRELS = {
-    "aux:pass",
-    "nsubj:pass",
-    "expl:pass",
-}
+
 
 class PassiveVoiceDependencyDimension(IterableInspectableDimension):
+    """
+    Compute the percentage of dependency-tagged sentences that contain
+    passive voice dependency labels.
+    """
+
     def __init__(
         self,
         key: str,
@@ -44,26 +59,39 @@ class PassiveVoiceDependencyDimension(IterableInspectableDimension):
         dimension,
         input_column: str = "tagged_dep",
     ):
+        """
+        Build the dimension from configuration.
+        """
         return cls(
             key=dimension.key,
-            input_column="tagged_dep",
+            input_column=input_column,
         )
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._compute_text(self.get_text(item))
+        """
+        Compute the passive voice percentage for a single row.
+        """
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the passive voice percentage for all rows.
+        """
+        return self.get_text_series(df).apply(self._compute_text)
 
-    def _compute_text(self, tagged_text: str) -> float:
+    def _compute_text(
+        self,
+        tagged_text: str,
+    ) -> float:
+        """
+        Compute the percentage of sentences containing passive dependency labels.
+        """
         sentences = self._split_sentences(tagged_text)
 
         if not sentences:
@@ -83,6 +111,9 @@ class PassiveVoiceDependencyDimension(IterableInspectableDimension):
         self,
         items: list[dict],
     ) -> bool:
+        """
+        Return True if any dependency item is marked as passive.
+        """
         return any(
             item["deprel"] in PASSIVE_DEPRELS
             for item in items
@@ -92,6 +123,9 @@ class PassiveVoiceDependencyDimension(IterableInspectableDimension):
         self,
         tagged_text: str,
     ) -> list[str]:
+        """
+        Split dependency-tagged text into sentence chunks.
+        """
         if not tagged_text:
             return []
 
@@ -105,6 +139,9 @@ class PassiveVoiceDependencyDimension(IterableInspectableDimension):
         self,
         sentence: str,
     ) -> list[dict]:
+        """
+        Parse a dependency-tagged sentence into dependency items.
+        """
         items = []
 
         for raw_item in sentence.split(", "):
@@ -122,7 +159,13 @@ class PassiveVoiceDependencyDimension(IterableInspectableDimension):
 
         return items
 
-    def iter_matches(self, tagged_text: str):
+    def iter_matches(
+        self,
+        tagged_text: str,
+    ):
+        """
+        Yield passive dependency matches for inspection.
+        """
         tagged_text = "" if tagged_text is None else str(tagged_text)
 
         search_start = 0
@@ -152,4 +195,10 @@ class PassiveVoiceDependencyDimension(IterableInspectableDimension):
                 )
 
     def inspection_debug_text(self) -> str:
-        return "Passive dependency labels: aux:pass, nsubj:pass, expl:pass"
+        """
+        Return the dependency labels considered passive.
+        """
+        return (
+            "Passive dependency labels: "
+            "aux:pass, nsubj:pass, expl:pass"
+        )

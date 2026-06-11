@@ -1,11 +1,10 @@
-# src/umutextstats/dimensions/rtie.py
-
 from __future__ import annotations
 
 import statistics
 
+import pandas as pd
+
 from umutextstats.config.params import param
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
@@ -14,6 +13,13 @@ from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class RTIEBaseDimension(ScalarInspectableDimension):
+    """
+    Base class for RTIE-style lexical diversity dimensions.
+
+    The text can be evaluated as a whole, split by sentence, or split
+    into fixed-size word chunks.
+    """
+
     def __init__(
         self,
         key: str,
@@ -31,6 +37,9 @@ class RTIEBaseDimension(ScalarInspectableDimension):
         dimension,
         input_column: str = "text_norm",
     ):
+        """
+        Build the dimension from configuration.
+        """
         return cls(
             key=dimension.key,
             input_column=input_column,
@@ -40,19 +49,33 @@ class RTIEBaseDimension(ScalarInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._compute_text(self.get_text(item))
-
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
+        """
+        Compute the RTIE value for a single row.
+        """
+        return self._compute_text(
+            self.get_text(row)
         )
 
-    def _ratios(self, text: str) -> list[float]:
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the RTIE value for all rows.
+        """
+        return self.get_text_series(df).apply(
+            self._compute_text
+        )
+
+    def _ratios(
+        self,
+        text: str,
+    ) -> list[float]:
+        """
+        Compute type-token ratios according to the configured separator.
+        """
         if self.separator == "whole":
             return [self._ttr_whole(text)]
 
@@ -61,7 +84,13 @@ class RTIEBaseDimension(ScalarInspectableDimension):
 
         return self._ttr_by_chunks(text)
 
-    def _ttr_whole(self, text: str) -> float:
+    def _ttr_whole(
+        self,
+        text: str,
+    ) -> float:
+        """
+        Compute type-token ratio over the whole text.
+        """
         words = self._words(text)
 
         if not words:
@@ -69,7 +98,13 @@ class RTIEBaseDimension(ScalarInspectableDimension):
 
         return len(set(words)) / len(words)
 
-    def _ttr_by_chunks(self, text: str) -> list[float]:
+    def _ttr_by_chunks(
+        self,
+        text: str,
+    ) -> list[float]:
+        """
+        Compute type-token ratios over fixed-size word chunks.
+        """
         words = self._words(text)
 
         if not words:
@@ -81,27 +116,49 @@ class RTIEBaseDimension(ScalarInspectableDimension):
             chunk = words[start:start + self.chunk_size]
 
             if chunk:
-                ratios.append(len(set(chunk)) / len(chunk))
+                ratios.append(
+                    len(set(chunk)) / len(chunk)
+                )
 
         return ratios
 
-    def _ttr_by_sentence(self, text: str) -> list[float]:
+    def _ttr_by_sentence(
+        self,
+        text: str,
+    ) -> list[float]:
+        """
+        Compute type-token ratios sentence by sentence.
+        """
         ratios = []
 
         for sentence in self._sentences(text):
             words = self._words(sentence)
 
             if words:
-                ratios.append(len(set(words)) / len(words))
+                ratios.append(
+                    len(set(words)) / len(words)
+                )
             else:
                 ratios.append(0.0)
 
         return ratios
 
-    def _words(self, text: str) -> list[str]:
+    def _words(
+        self,
+        text: str,
+    ) -> list[str]:
+        """
+        Extract lexical tokens from text.
+        """
         return get_lexical_tokens(text)
 
-    def _sentences(self, text: str) -> list[str]:
+    def _sentences(
+        self,
+        text: str,
+    ) -> list[str]:
+        """
+        Extract sentence spans from text.
+        """
         return [
             match.group(0).strip()
             for match in SENTENCE_SPAN_REGEX.finditer(text)
@@ -109,6 +166,9 @@ class RTIEBaseDimension(ScalarInspectableDimension):
         ]
 
     def inspection_debug_text(self) -> str:
+        """
+        Return configuration details used during inspection.
+        """
         return (
             f"Separator: {self.separator}\n"
             f"Chunk size: {self.chunk_size}"
@@ -116,7 +176,14 @@ class RTIEBaseDimension(ScalarInspectableDimension):
 
 
 class RTIEDimension(RTIEBaseDimension):
-    def _compute_text(self, text: str) -> float:
+    """
+    Compute the average type-token ratio.
+    """
+
+    def _compute_text(
+        self,
+        text: str,
+    ) -> float:
         ratios = self._ratios(text)
 
         if not ratios:
@@ -126,7 +193,14 @@ class RTIEDimension(RTIEBaseDimension):
 
 
 class RTIEDeviationDimension(RTIEBaseDimension):
-    def _compute_text(self, text: str) -> float:
+    """
+    Compute the population standard deviation of type-token ratios.
+    """
+
+    def _compute_text(
+        self,
+        text: str,
+    ) -> float:
         ratios = self._ratios(text)
 
         if len(ratios) <= 1:

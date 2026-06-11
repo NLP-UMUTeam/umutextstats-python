@@ -1,10 +1,19 @@
+import pandas as pd
 import regex as re
 
 from umutextstats.config.params import param, percentage_param
-from umutextstats.dimensions.dimension_input import DimensionInput
-from umutextstats.inspection.iterable_inspectable_dimension import IterableInspectableDimension
+from umutextstats.inspection.iterable_inspectable_dimension import (
+    IterableInspectableDimension,
+)
+
 
 class PatternDimension(IterableInspectableDimension):
+    """
+    Count regex matches in the configured input column.
+
+    If `percentage` is enabled, the result is normalized by text length.
+    """
+
     def __init__(
         self,
         key: str,
@@ -16,6 +25,7 @@ class PatternDimension(IterableInspectableDimension):
         self.pattern = pattern
         self.percentage = percentage
 
+        # Compile once at initialization time for better runtime performance.
         try:
             self.regex = re.compile(pattern, re.IGNORECASE)
         except re.error as exc:
@@ -30,6 +40,9 @@ class PatternDimension(IterableInspectableDimension):
         dimension,
         input_column: str = "text_norm",
     ):
+        """
+        Build the dimension from configuration.
+        """
         return cls(
             key=dimension.key,
             pattern=param(dimension, "pattern", ""),
@@ -39,9 +52,12 @@ class PatternDimension(IterableInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float | int:
-        text = self.get_text(item)
+        """
+        Compute regex match count or percentage for a single row.
+        """
+        text = self.get_text(row)
         count = self.count_matches(text)
 
         if not self.percentage:
@@ -52,15 +68,14 @@ class PatternDimension(IterableInspectableDimension):
 
         return (100 * count) / len(text)
 
-    def iter_matches(self, text: str):
-        text = "" if text is None else str(text)
-        yield from self.regex.finditer(text)
-
-    def count_matches(self, text: str) -> int:
-        return sum(1 for _ in self.iter_matches(text))
-
-    def compute(self, df):
-        texts = df[self.input_column].fillna("").astype(str)
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute regex match count or percentage for all rows.
+        """
+        texts = self.get_text_series(df)
         counts = texts.apply(self.count_matches)
 
         if not self.percentage:
@@ -68,7 +83,33 @@ class PatternDimension(IterableInspectableDimension):
 
         total = texts.str.len()
 
-        result = (100 * counts / total.replace(0, 1)).astype(float)
+        result = (
+            100 * counts / total.replace(0, 1)
+        ).astype(float)
+
         result[total == 0] = 0.0
 
         return result
+
+    def iter_matches(
+        self,
+        text: str,
+    ):
+        """
+        Yield regex matches for inspection.
+        """
+        text = "" if text is None else str(text)
+
+        yield from self.regex.finditer(text)
+
+    def count_matches(
+        self,
+        text: str,
+    ) -> int:
+        """
+        Count regex matches in a text.
+        """
+        return sum(
+            1
+            for _ in self.iter_matches(text)
+        )

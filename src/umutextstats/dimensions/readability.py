@@ -1,23 +1,54 @@
-from umutextstats.dimensions.dimension_input import DimensionInput
-from umutextstats.text.syllables import count_syllables_text
-from umutextstats.text.tokenization import get_lexical_tokens
-from umutextstats.text.patterns import SENTENCE_SPAN_REGEX
+import pandas as pd
+
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
+from umutextstats.text.patterns import SENTENCE_SPAN_REGEX
+from umutextstats.text.syllables import count_syllables_text
+from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class ReadabilityDimension(ScalarInspectableDimension):
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
+    """
+    Compute the readability score for the configured input text.
+
+    Formula:
+
+        206.84
+        - 60 * (syllables / words)
+        - 102 * (sentences / words)
+    """
+
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float:
+        """
+        Compute readability for a single row.
+        """
+        return self._compute_text(
+            self.get_text(row)
         )
 
-    def _compute_text(self, text: str) -> float:
-        word_count = len(get_lexical_tokens (text))
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute readability for all rows.
+        """
+        return self.get_text_series(df).apply(
+            self._compute_text
+        )
+
+    def _compute_text(
+        self,
+        text: str,
+    ) -> float:
+        """
+        Compute readability from plain text.
+        """
+        word_count = len(get_lexical_tokens(text))
         syllables_count = count_syllables_text(text)
         sentences_count = self._count_sentences(text)
 
@@ -30,7 +61,16 @@ class ReadabilityDimension(ScalarInspectableDimension):
             - (102 * (sentences_count / word_count))
         )
 
-    def _count_sentences(self, text: str) -> int:
+    def _count_sentences(
+        self,
+        text: str,
+    ) -> int:
+        """
+        Count sentence spans.
+
+        Empty text returns 0. Non-empty text without sentence spans
+        returns 1.
+        """
         text = text.strip()
 
         if not text:
@@ -42,17 +82,11 @@ class ReadabilityDimension(ScalarInspectableDimension):
             return 1
 
         return count
-    
 
-    def compute_single(
-        self,
-        item: DimensionInput,
-    ) -> float:
-        return self._compute_text(
-            self.get_text(item)
-        )
-    
     def inspection_debug_text(self) -> str:
+        """
+        Return the formula used by this dimension.
+        """
         return (
             "Formula: "
             "206.84 - "

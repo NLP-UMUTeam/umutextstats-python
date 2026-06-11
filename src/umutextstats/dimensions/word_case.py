@@ -1,16 +1,26 @@
+import pandas as pd
+
 from umutextstats.config.params import param
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
 from umutextstats.text.patterns import (
-    URL_REGEX,
     LEADING_MENTION_REGEX,
+    URL_REGEX,
     WORD_TOKEN_REGEX,
 )
 
 
 class WordCase(ScalarInspectableDimension):
+    """
+    Compute the percentage of words matching a casing rule.
+
+    Supported comparators:
+    - "upper"
+    - "lower"
+    - "title"
+    """
+
     def __init__(
         self,
         key: str,
@@ -26,6 +36,9 @@ class WordCase(ScalarInspectableDimension):
         dimension,
         input_column: str = "text_raw",
     ):
+        """
+        Build the dimension from configuration.
+        """
         return cls(
             key=dimension.key,
             comparator=(
@@ -33,27 +46,38 @@ class WordCase(ScalarInspectableDimension):
                 or param(dimension, "comparator")
                 or "upper"
             ),
-            input_column="text_raw",
+            input_column=input_column,
         )
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._compute_text(self.get_text(item))
+        """
+        Compute the casing percentage for a single row.
+        """
+        return self._compute_text(
+            self.get_text(row)
+        )
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the casing percentage for all rows.
+        """
+        return self.get_text_series(df).apply(
+            self._compute_text
         )
 
     def _compute_text(
         self,
         text: str,
     ) -> float:
+        """
+        Compute the percentage of words matching the configured casing rule.
+        """
         text = URL_REGEX.sub("", text)
         text = LEADING_MENTION_REGEX.sub("", text).strip()
 
@@ -90,6 +114,9 @@ class WordCase(ScalarInspectableDimension):
         self,
         word: str,
     ) -> bool:
+        """
+        Check whether a word matches the configured casing rule.
+        """
         if self.comparator == "lower":
             return word == word.lower()
 
@@ -99,4 +126,7 @@ class WordCase(ScalarInspectableDimension):
         return word == word.upper()
 
     def inspection_debug_text(self) -> str:
+        """
+        Return configuration details used during inspection.
+        """
         return f"Comparator: {self.comparator}"

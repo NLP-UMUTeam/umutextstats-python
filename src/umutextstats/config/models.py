@@ -11,7 +11,7 @@ class DimensionConfig:
     validation: dict | None = None
     pattern: str | None = None
     universal: str | None = None
-    use_original_input: bool = False
+    input_column: str | None = None
     pos_tag: str | list[str] | None = None
     pos_input_column: str | None = "tagged_pos"
     percentage: bool = True

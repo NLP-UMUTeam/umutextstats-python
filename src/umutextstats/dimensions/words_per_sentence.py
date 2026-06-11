@@ -1,29 +1,49 @@
-from umutextstats.dimensions.dimension_input import DimensionInput
-from umutextstats.inspection.iterable_inspectable_dimension import IterableInspectableDimension
+import pandas as pd
+
+from umutextstats.inspection.iterable_inspectable_dimension import (
+    IterableInspectableDimension,
+)
 from umutextstats.text.sentence import count_sentences
 from umutextstats.text.tokenization import get_lexical_tokens
 
 
 class WordPerSentenceDimension(IterableInspectableDimension):
+    """
+    Compute the average number of lexical words per sentence.
+    """
+
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._compute_text(self.get_text(item))
+        """
+        Compute words per sentence for a single row.
+        """
+        return self._compute_text(
+            self.get_text(row)
+        )
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute words per sentence for all rows.
+        """
+        return self.get_text_series(df).apply(
+            self._compute_text
         )
 
     def _compute_text(
         self,
         text: str,
     ) -> float:
-        total_words = len(get_lexical_tokens(text))
+        """
+        Compute the average number of lexical words per sentence.
+        """
+        total_words = len(
+            get_lexical_tokens(text)
+        )
 
         if total_words == 0:
             return 0.0

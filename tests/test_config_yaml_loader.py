@@ -18,7 +18,7 @@ dimensions:
       - key: phonetics-expressive-lengthening
         class: PatternDimension
         pattern: '(.)\\1{3,}'
-        use_original_input: true
+        input_column: text_norm
 """,
         encoding="utf-8",
     )
@@ -29,4 +29,3 @@ dimensions:
     assert config.dimensions[0].key == "phonetics"
     assert config.dimensions[0].children[0].key == "phonetics-expressive-lengthening"
     assert config.dimensions[0].children[0].class_name == "PatternDimension"
-    assert config.dimensions[0].children[0].use_original_input is True

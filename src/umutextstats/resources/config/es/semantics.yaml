@@ -5,7 +5,7 @@ dimensions:
     class: WordPerDictionary
     description: List of onomatopoeia; that is, the formation of a word from a sound associated with what is named.
     dictionary: onomatopoeia
-    use_original_input: true
+    input_column: text_raw
     percentage: false
   - key: semantics-euphemisms
     class: WordPerDictionary

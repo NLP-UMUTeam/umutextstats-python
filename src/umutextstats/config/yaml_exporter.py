@@ -27,11 +27,7 @@ def dimension_to_dict(dimension: DimensionConfig) -> dict[str, Any]:
         "dictionary": dimension.dictionary,
         "pattern": dimension.pattern,
         "universal": dimension.universal,
-        "use_original_input": (
-            dimension.use_original_input
-            if dimension.use_original_input is not False
-            else None
-        ),
+        "input_column": dimension.input_column,
         "percentage": (
             dimension.percentage
             if dimension.percentage is not True

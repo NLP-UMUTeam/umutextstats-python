@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import pandas as pd
 import regex as re
 
 from umutextstats.config.params import param
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.iterable_inspectable_dimension import (
     IterableInspectableDimension,
 )
+from umutextstats.inspection.models import DimensionInspection
 from umutextstats.text.patterns import POS_ITEM_REGEX
 from umutextstats.text.tokenization import get_lexical_tokens
 
@@ -23,6 +24,10 @@ VERB_FORM_BY_MODE = {
 
 @dataclass(frozen=True)
 class PeriphrasisMatch:
+    """
+    Regex-like match object used by the inspection layer.
+    """
+
     text: str
     start_pos: int
     end_pos: int
@@ -41,6 +46,14 @@ class PeriphrasisMatch:
 
 
 class PeriphrasisDimension(IterableInspectableDimension):
+    """
+    Count verbal periphrases based on lexical tokens and POS annotations.
+
+    This dimension needs two columns:
+    - `input_column`: text used to extract lexical tokens.
+    - `tagged_pos_column`: POS-tagged text used to validate verb forms.
+    """
+
     def __init__(
         self,
         key: str,
@@ -71,22 +84,91 @@ class PeriphrasisDimension(IterableInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> int:
-        text = self.get_text(item)
-        tagged_pos = self._get_tagged_pos(item)
+        """
+        Compute the number of verbal periphrases for a single row.
+        """
+        text = self.get_text(row)
+        tagged_pos = self.get_text(
+            row=row,
+            column=self.tagged_pos_column,
+        )
 
         return self._compute_text(
             text=text,
             tagged_pos=tagged_pos,
         )
 
-    def compute(self, df):
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the number of verbal periphrases for all rows.
+        """
         return df.apply(self._compute_row, axis=1)
 
-    def _compute_row(self, row) -> int:
-        text = str(row.get(self.input_column, "") or "")
-        tagged_pos = str(row.get(self.tagged_pos_column, "") or "")
+    def inspect(
+        self,
+        row: pd.Series,
+    ) -> DimensionInspection:
+        """
+        Inspect the detected periphrases for a single row.
+
+        This overrides the default iterable inspection because this
+        dimension needs both text and POS annotations.
+        """
+        text = self.get_text(row)
+        tagged_pos = self.get_text(
+            row=row,
+            column=self.tagged_pos_column,
+        )
+
+        matches = [
+            self._to_inspect_match(match)
+            for match in self._iter_periphrases(
+                text=text,
+                tagged_pos=tagged_pos,
+            )
+        ]
+
+        return DimensionInspection(
+            key=self.key,
+            class_name=self.__class__.__name__,
+            pattern=None,
+            dictionary=None,
+            matches=matches,
+            discarded_matches=[],
+            debug_text=self._build_debug_text(
+                value=len(matches),
+            ),
+        )
+
+    def iter_matches(
+        self,
+        text: str,
+    ):
+        """
+        Return no matches when only plain text is available.
+
+        Correct inspection requires POS annotations, so `inspect()`
+        is implemented directly instead.
+        """
+        return []
+
+    def _compute_row(
+        self,
+        row: pd.Series,
+    ) -> int:
+        """
+        Compute the dimension from a DataFrame row.
+        """
+        text = self.get_text(row)
+        tagged_pos = self.get_text(
+            row=row,
+            column=self.tagged_pos_column,
+        )
 
         return self._compute_text(
             text=text,
@@ -98,6 +180,9 @@ class PeriphrasisDimension(IterableInspectableDimension):
         text: str,
         tagged_pos: str,
     ) -> int:
+        """
+        Count periphrases in a text using its POS annotations.
+        """
         return sum(
             1
             for _ in self._iter_periphrases(
@@ -106,40 +191,14 @@ class PeriphrasisDimension(IterableInspectableDimension):
             )
         )
 
-    def inspect(self, item: DimensionInput):
-        text = self.get_text(item)
-        tagged_pos = self._get_tagged_pos(item)
-
-        matches = [
-            self._to_inspect_match(match)
-            for match in self._iter_periphrases(
-                text=text,
-                tagged_pos=tagged_pos,
-            )
-        ]
-
-        from umutextstats.inspection.models import DimensionInspection
-
-        return DimensionInspection(
-            key=self.key,
-            class_name=self.__class__.__name__,
-            pattern=None,
-            dictionary=None,
-            matches=matches,
-            discarded_matches=[],
-            debug_text=self._build_debug_text(item),
-        )
-
-    def iter_matches(self, text: str):
-        # No se puede inspeccionar correctamente solo con text,
-        # porque esta dimensión necesita tagged_pos.
-        return []
-
     def _iter_periphrases(
         self,
         text: str,
         tagged_pos: str,
     ):
+        """
+        Yield verbal periphrases detected in text.
+        """
         words = get_lexical_tokens(text)
         tagged_words = self._parse_tagged_pos(tagged_pos)
 
@@ -193,23 +252,18 @@ class PeriphrasisDimension(IterableInspectableDimension):
 
             index += 1
 
-    def _get_tagged_pos(
-        self,
-        item: DimensionInput,
-    ) -> str:
-        tagged_pos = item.get_annotation(self.tagged_pos_column)
-
-        if tagged_pos is not None:
-            return str(tagged_pos)
-
-        value = item.get(self.tagged_pos_column, "")
-
-        return "" if value is None else str(value)
-
     def _parse_auxiliar_verbs(
         self,
         raw: str,
     ) -> list[dict]:
+        """
+        Parse auxiliary verb configuration.
+
+        Example item:
+
+            estar+gerund
+            ir (a)+infinitive
+        """
         auxiliaries = []
 
         if not raw:
@@ -228,7 +282,6 @@ class PeriphrasisDimension(IterableInspectableDimension):
                 continue
 
             linker_variants = []
-
             linker_match = re.search(r"\((.*?)\)", left)
 
             if linker_match:
@@ -266,6 +319,9 @@ class PeriphrasisDimension(IterableInspectableDimension):
         start_index: int,
         linker_variants: list[list[str]],
     ) -> int | None:
+        """
+        Match optional linker tokens after an auxiliary verb.
+        """
         for linker_tokens in linker_variants:
             end_index = start_index + len(linker_tokens)
 
@@ -278,6 +334,9 @@ class PeriphrasisDimension(IterableInspectableDimension):
         self,
         tagged_text: str,
     ) -> list[dict[str, str]]:
+        """
+        Parse POS-tagged text into a list of token dictionaries.
+        """
         if not tagged_text:
             return []
 
@@ -305,6 +364,9 @@ class PeriphrasisDimension(IterableInspectableDimension):
         item: dict[str, str],
         mode: str,
     ) -> bool:
+        """
+        Check whether a POS item matches the expected verb form.
+        """
         if item["tag"] not in {"VERB", "AUX"}:
             return False
 
@@ -316,6 +378,9 @@ class PeriphrasisDimension(IterableInspectableDimension):
         return expected in item["feats"]
 
     def inspection_debug_text(self) -> str:
+        """
+        Return configuration details used during inspection.
+        """
         return (
             f"Auxiliary patterns: {len(self.auxiliar_verbs)}\n"
             f"Tagged POS column: {self.tagged_pos_column}"

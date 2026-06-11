@@ -1,14 +1,15 @@
-from statistics import pstdev
 from dataclasses import dataclass
+from statistics import pstdev
 
-from umutextstats.dimensions.dimension_input import DimensionInput
+import pandas as pd
+
 from umutextstats.inspection.iterable_inspectable_dimension import (
     IterableInspectableDimension,
 )
 from umutextstats.text.paragraph import (
-    split_paragraphs,
-    paragraph_lengths,
     iter_paragraph_spans,
+    paragraph_lengths,
+    split_paragraphs,
 )
 from umutextstats.text.patterns import DIALOGUE_PARAGRAPH_REGEX
 
@@ -34,17 +35,20 @@ class ParagraphCountDimension(IterableInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> int:
-        return len(split_paragraphs(self.get_text(item)))
+        return len(split_paragraphs(self.get_text(row)))
 
-    def compute(self, df):
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
         if "paragraph_count" in df.columns:
             return df["paragraph_count"]
 
-        text = df[self.input_column].fillna("").astype(str)
-
-        return text.apply(lambda value: len(split_paragraphs(value)))
+        return self.get_text_series(df).apply(
+            lambda value: len(split_paragraphs(value))
+        )
 
     def iter_matches(self, text: str):
         for paragraph, start, end in iter_paragraph_spans(text):
@@ -56,17 +60,20 @@ class AverageParagraphLengthDimension(IterableInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._average_paragraph_length(self.get_text(item))
+        return self._average_paragraph_length(self.get_text(row))
 
-    def compute(self, df):
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
         if "paragraph_length_avg" in df.columns:
             return df["paragraph_length_avg"]
 
-        text = df[self.input_column].fillna("").astype(str)
-
-        return text.apply(self._average_paragraph_length)
+        return self.get_text_series(df).apply(
+            self._average_paragraph_length
+        )
 
     def iter_matches(self, text: str):
         for paragraph, start, end in iter_paragraph_spans(text):
@@ -87,17 +94,20 @@ class ParagraphLengthDeviationDimension(IterableInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._paragraph_length_std(self.get_text(item))
+        return self._paragraph_length_std(self.get_text(row))
 
-    def compute(self, df):
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
         if "paragraph_length_std" in df.columns:
             return df["paragraph_length_std"]
 
-        text = df[self.input_column].fillna("").astype(str)
-
-        return text.apply(self._paragraph_length_std)
+        return self.get_text_series(df).apply(
+            self._paragraph_length_std
+        )
 
     def iter_matches(self, text: str):
         for paragraph, start, end in iter_paragraph_spans(text):
@@ -125,17 +135,15 @@ class DialogueParagraphPercentageDimension(IterableInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._compute_text(self.get_text(item))
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
     def iter_matches(self, text: str):
         for paragraph, start, end in iter_paragraph_spans(text):

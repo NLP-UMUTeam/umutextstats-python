@@ -1,6 +1,7 @@
+import pandas as pd
+
 from umutextstats.config.params import dictionary_param, percentage_param
 from umutextstats.dictionaries import DictionaryLoader
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
@@ -66,6 +67,15 @@ AUX_VERB_HABER = {
 
 
 class VerbPerDictionary(ScalarInspectableDimension):
+    """
+    Count dictionary verb matches or compute their percentage over words.
+
+    The dictionary can include simple verb entries and compound entries
+    such as "haber participle". During computation, the previous auxiliary
+    verb "haber" form is combined with the current word to detect those
+    compound entries.
+    """
+
     def __init__(
         self,
         key: str,
@@ -92,6 +102,8 @@ class VerbPerDictionary(ScalarInspectableDimension):
             entries = self.dictionary_loader.load(name)
             words.extend(entries.words)
 
+        # Store dictionary entries as lowercase strings once.
+        # Runtime checks then become O(1) set lookups.
         self.words = {
             entry.lower()
             for entry in words
@@ -103,6 +115,9 @@ class VerbPerDictionary(ScalarInspectableDimension):
         dimension,
         input_column: str = "text_norm",
     ):
+        """
+        Build the dimension from configuration.
+        """
         return cls(
             key=dimension.key,
             dictionary_name=dictionary_param(dimension),
@@ -112,22 +127,33 @@ class VerbPerDictionary(ScalarInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        return self._compute_text(self.get_text(item))
+        """
+        Compute the verb dictionary score for a single row.
+        """
+        return self._compute_text(
+            self.get_text(row)
+        )
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the verb dictionary score for all rows.
+        """
+        return self.get_text_series(df).apply(
+            self._compute_text
         )
 
     def _compute_text(
         self,
         text: str,
     ) -> float:
+        """
+        Count matching verbs in a text and optionally normalize as percentage.
+        """
         words = get_lexical_tokens(text)
         total_words = len(words)
 
@@ -155,6 +181,9 @@ class VerbPerDictionary(ScalarInspectableDimension):
         return (100 * occurrences) / total_words
 
     def inspection_debug_text(self) -> str:
+        """
+        Return configuration details used during inspection.
+        """
         return (
             f"Loaded dictionary: {self.dictionary_name}\n"
             f"Dictionary entries: {len(self.words)}\n"

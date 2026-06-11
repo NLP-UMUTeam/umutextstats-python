@@ -1,5 +1,6 @@
+import pandas as pd
+
 from umutextstats.config.params import param
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
@@ -33,25 +34,29 @@ class LanguageDimension(ScalarInspectableDimension):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float | str:
         if self.model is None:
             return self.missing_value
 
-        return self._compute_text(self.get_text(item))
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
         if self.model is None:
-            return [self.missing_value] * len(df)
+            return pd.Series(
+                [self.missing_value] * len(df),
+                index=df.index,
+            )
 
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+        return self.get_text_series(df).apply(self._compute_text)
 
-    def _compute_text(self, text: str) -> float:
+    def _compute_text(
+        self,
+        text: str,
+    ) -> float:
         if not text.strip():
             return 0.0
 

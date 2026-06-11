@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import pandas as pd
+
 from umutextstats.config.params import param
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.inspection.scalar_inspectable_dimension import (
     ScalarInspectableDimension,
 )
@@ -19,25 +20,33 @@ class DependencyDepthDimension(ScalarInspectableDimension):
         self.mode = mode
 
     @classmethod
-    def from_config(cls, dimension, input_column: str = "tagged_dep"):
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "tagged_dep",
+    ):
         return cls(
             key=dimension.key,
-            input_column="tagged_dep",
+            input_column=input_column,
             mode=param(dimension, "mode", "max"),
         )
 
-    def compute_single(self, item: DimensionInput) -> float:
-        return self._compute_text(self.get_text(item))
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float:
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
-    def _compute_text(self, tagged_text: str) -> float:
+    def _compute_text(
+        self,
+        tagged_text: str,
+    ) -> float:
         all_values = []
 
         for sentence in tagged_text.split(" || "):
@@ -62,7 +71,10 @@ class DependencyDepthDimension(ScalarInspectableDimension):
 
         return float(max(all_values))
 
-    def _compute_depths(self, items: list[dict]) -> dict[int, int]:
+    def _compute_depths(
+        self,
+        items: list[dict],
+    ) -> dict[int, int]:
         heads = {
             item["id"]: item["head"]
             for item in items
@@ -71,7 +83,11 @@ class DependencyDepthDimension(ScalarInspectableDimension):
         depths = {}
 
         for item_id in heads:
-            depths[item_id] = self._depth(item_id, heads, seen=set())
+            depths[item_id] = self._depth(
+                item_id=item_id,
+                heads=heads,
+                seen=set(),
+            )
 
         return depths
 
@@ -94,7 +110,11 @@ class DependencyDepthDimension(ScalarInspectableDimension):
         if head not in heads:
             return 0
 
-        return 1 + self._depth(head, heads, seen)
+        return 1 + self._depth(
+            item_id=head,
+            heads=heads,
+            seen=seen,
+        )
 
 
 class DependencyDistanceDimension(ScalarInspectableDimension):
@@ -108,25 +128,33 @@ class DependencyDistanceDimension(ScalarInspectableDimension):
         self.mode = mode
 
     @classmethod
-    def from_config(cls, dimension, input_column: str = "tagged_dep"):
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "tagged_dep",
+    ):
         return cls(
             key=dimension.key,
-            input_column="tagged_dep",
+            input_column=input_column,
             mode=param(dimension, "mode", "mean"),
         )
 
-    def compute_single(self, item: DimensionInput) -> float:
-        return self._compute_text(self.get_text(item))
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float:
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
-    def _compute_text(self, tagged_text: str) -> float:
+    def _compute_text(
+        self,
+        tagged_text: str,
+    ) -> float:
         distances = []
 
         for sentence in tagged_text.split(" || "):
@@ -161,36 +189,51 @@ class DependencyTag(ScalarInspectableDimension):
         self.deprel = deprel
 
     @classmethod
-    def from_config(cls, dimension, input_column: str = "tagged_dep"):
+    def from_config(
+        cls,
+        dimension,
+        input_column: str = "tagged_dep",
+    ):
         return cls(
             key=dimension.key,
-            input_column="tagged_dep",
+            input_column=input_column,
             deprel=param(dimension, "deprel"),
         )
 
-    def compute_single(self, item: DimensionInput) -> float:
-        return self._compute_text(self.get_text(item))
+    def compute_single(
+        self,
+        row: pd.Series,
+    ) -> float:
+        return self._compute_text(self.get_text(row))
 
-    def compute(self, df):
-        return (
-            df[self.input_column]
-            .fillna("")
-            .astype(str)
-            .apply(self._compute_text)
-        )
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        return self.get_text_series(df).apply(self._compute_text)
 
-    def _compute_text(self, tagged_text: str) -> float:
+    def _compute_text(
+        self,
+        tagged_text: str,
+    ) -> float:
         items = parse_tagged_dep(tagged_text, with_id=False)
         total_words = len(items)
 
         if total_words == 0:
             return 0.0
 
-        matches = sum(1 for item in items if self._matches(item))
+        matches = sum(
+            1
+            for item in items
+            if self._matches(item)
+        )
 
         return (100 * matches) / total_words
 
-    def _matches(self, item: dict[str, str]) -> bool:
+    def _matches(
+        self,
+        item: dict[str, str],
+    ) -> bool:
         if self.deprel:
             return item["deprel"] == self.deprel
 

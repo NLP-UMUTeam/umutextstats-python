@@ -24,14 +24,14 @@ dimensions:
       class: PatternDimension
       description: Number of line breaks
       pattern: '[\r\n]'
-      use_original_input: true
+      input_column: text_raw
       separator: whole
 
     - key: document-structure-layout-blank-lines
       class: PatternDimension
       description: Number of blank lines
       pattern: '(?m)^\s*$'
-      use_original_input: true
+      input_column: text_raw
       separator: whole
 
   - key: document-structure-dialogue-paragraphs

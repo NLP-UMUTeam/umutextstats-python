@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-import regex as re
+import pandas as pd
 from rich.console import Group
 from rich.text import Text
 
-from umutextstats.io.text import ensure_text
 from umutextstats.config.explain import find_dimension
-from umutextstats.dimensions.factory import build_runtime_dimension
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.config.models import UMUTextStatsConfig
+from umutextstats.dimensions.factory import build_runtime_dimension
 from umutextstats.inspection.models import (
-    InspectMatch,
     DimensionInspection,
+    InspectMatch,
 )
+from umutextstats.io.text import ensure_text
+
 
 def _inspect_not_supported_dimension(
     dimension,
@@ -29,13 +29,18 @@ def _inspect_not_supported_dimension(
     )
 
 
-
 def inspect_dimension_text(
     config: UMUTextStatsConfig,
     key: str,
     text: str,
     annotations: dict | None = None,
 ) -> DimensionInspection:
+    """
+    Inspect a configured dimension for a single text.
+
+    The text and optional annotations are converted into a pandas Series,
+    which is the single-row runtime context used by dimensions.
+    """
     text = ensure_text(text)
 
     explanation = find_dimension(config, key)
@@ -46,29 +51,27 @@ def inspect_dimension_text(
     dimension = explanation.dimension
     runtime_dimension = build_runtime_dimension(dimension)
 
-    row = {
+    row_data = {
         "text": text,
         "text_raw": text,
         "text_norm": text,
     }
 
     if annotations:
-        row.update(annotations)
+        row_data.update(annotations)
 
-
-    item = DimensionInput(
-        row=row,
-        annotations=annotations or {},
-    )
+    row = pd.Series(row_data)
 
     if runtime_dimension is not None:
-        inspection = runtime_dimension.inspect(item)
+        inspection = runtime_dimension.inspect(row)
+
         if inspection is not None:
-            return inspection    
+            return inspection
 
-
-    return _inspect_not_supported_dimension(dimension, text)
-
+    return _inspect_not_supported_dimension(
+        dimension=dimension,
+        text=text,
+    )
 
 
 def render_inspection(
@@ -128,7 +131,10 @@ def render_inspection(
     return Group(*lines)
 
 
-def highlight_matches(text: str, matches: list[InspectMatch]) -> Text:
+def highlight_matches(
+    text: str,
+    matches: list[InspectMatch],
+) -> Text:
     highlighted = Text(text)
 
     for match in matches:
@@ -139,4 +145,3 @@ def highlight_matches(text: str, matches: list[InspectMatch]) -> Text:
         )
 
     return highlighted
-

@@ -1,10 +1,11 @@
+import pandas as pd
+
 from umutextstats.config.params import (
     dictionary_param,
     disabled_regexp_param,
     param,
     percentage_param,
 )
-from umutextstats.dimensions.dimension_input import DimensionInput
 from umutextstats.dimensions.word_per_dictionary import WordPerDictionary
 from umutextstats.text.patterns import POS_ITEM_REGEX
 
@@ -21,6 +22,14 @@ ALLOWED_POS = {
 
 
 class GrammaticalGenderDimension(WordPerDictionary):
+    """
+    Count dictionary matches only among POS-filtered words.
+
+    This dimension uses `tagged_pos_column` to extract words whose POS tag
+    belongs to `ALLOWED_POS`, then applies the dictionary matching logic
+    inherited from WordPerDictionary.
+    """
+
     def __init__(
         self,
         key: str,
@@ -47,6 +56,9 @@ class GrammaticalGenderDimension(WordPerDictionary):
         dimension,
         input_column: str = "text_norm",
     ):
+        """
+        Build the dimension from configuration.
+        """
         return cls(
             key=dimension.key,
             dictionary_name=dictionary_param(dimension),
@@ -62,24 +74,37 @@ class GrammaticalGenderDimension(WordPerDictionary):
 
     def compute_single(
         self,
-        item: DimensionInput,
+        row: pd.Series,
     ) -> float:
-        tagged_pos = self._get_tagged_pos(item)
+        """
+        Compute the gender dictionary score for a single row.
+        """
+        tagged_pos = self.get_text(
+            row=row,
+            column=self.tagged_pos_column,
+        )
 
         return self._compute_tagged_pos(tagged_pos)
 
-    def compute(self, df):
-        return df.apply(self._compute_row, axis=1)
-
-    def _compute_row(self, row) -> float:
-        tagged_pos = str(row.get(self.tagged_pos_column, "") or "")
-
-        return self._compute_tagged_pos(tagged_pos)
+    def compute(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.Series:
+        """
+        Compute the gender dictionary score for all rows.
+        """
+        return self.get_text_series(
+            df=df,
+            column=self.tagged_pos_column,
+        ).apply(self._compute_tagged_pos)
 
     def _compute_tagged_pos(
         self,
         tagged_pos: str,
     ) -> float:
+        """
+        Compute dictionary matches over words filtered by POS tag.
+        """
         filtered_words = self._get_words_filtered_by_pos(tagged_pos)
         total_words = len(filtered_words)
 
@@ -98,6 +123,9 @@ class GrammaticalGenderDimension(WordPerDictionary):
         self,
         tagged_text: str,
     ) -> list[str]:
+        """
+        Extract lowercase words whose POS tag is allowed.
+        """
         words = []
 
         if not tagged_text:
@@ -118,20 +146,10 @@ class GrammaticalGenderDimension(WordPerDictionary):
 
         return words
 
-    def _get_tagged_pos(
-        self,
-        item: DimensionInput,
-    ) -> str:
-        tagged_pos = item.get_annotation(self.tagged_pos_column)
-
-        if tagged_pos is not None:
-            return str(tagged_pos)
-
-        value = item.get(self.tagged_pos_column, "")
-
-        return "" if value is None else str(value)
-
     def inspection_debug_text(self) -> str:
+        """
+        Return configuration details used during inspection.
+        """
         return (
             f"Loaded dictionary: {self.dictionary_name}\n"
             f"Allowed POS: {', '.join(sorted(ALLOWED_POS))}\n"

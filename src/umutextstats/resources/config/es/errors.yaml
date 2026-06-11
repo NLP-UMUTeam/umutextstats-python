@@ -12,11 +12,11 @@ dimensions:
     - key: errors-orthographics-misspelled-words
       class: ErrorMispellingDimension
       description: Percentage of misspelled words
-      use_original_input: true
+      input_column: text_raw
     - key: errors-orthographics-misspelled-accents-words
       class: ErrorMispellingAccentsDimension
       description: Percentage of poorly accented words
-      use_original_input: true
+      input_column: text_raw
   - key: errors-stylistics
     class: CompositeDimension
     strategy: CompositeStrategySum
